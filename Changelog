@@ -1,0 +1,24 @@
+7/14/20 - initial coding
+7/16/20 - switched to OOP for sanity. the code will be cleaner this way. now have objects that do different things like
+          will make an object for each window I create, and will store all of the reusable data in one huge object.
+7/19/20 - login logic and UI done for the most part. can connect to server and get all of the data. then import it into
+          the data object. UI for linked clones done. switched to dictionaries for the data storage instead of lists.
+          this should make life easier when it comes to retrieving that data. Linked clone logic written
+7/20/20 - Moving functions to universal file. This will improve code re-usability. Going to rewrite Linked clone object
+          to be more general so that it can be used for several different functions. Before the next major round of
+          coding will go through code and do more type hinting and docstrings to make sure program is more readable.
+7/25/20 - Going to implement Instant clone and Disk promotion. Will reuse CloneWin class for this with a few small
+          modifications. Future versions may include options for multiple clones and the ability to create a cloned lab.
+          Also during testing with type hints, I realized that they are not always useful. Sometimes they get in the
+          way of working code. So while I will use them wherever possible, their usage is not an absolute. Furthermore
+          methods that call other objects in the module AND call functions in Vulcan must be kept at the class method
+          level since moving them to Vulcan causes circular import issues.
+8/3/20 -  Fixed an error with DataTree where the DVPortgroup objects were being recognized as a object of type Network.
+          This was likely due to it being a child object of Network. This also eliminated the need for getting another
+          view object from the server so that was removed. Starting work on cloning DVPortgroups. Will reuse the
+          PromoteDisk object for the window. There is nothing in the vCenter API to directly clone a DVPortgroup so that
+          will have to ne a reworking of creating a new portgroup taking most of the configuration from the master
+          portgroup.
+8/10/20 - Decoupled connection window from rootwindow class to allow for better code reuse. Added random six digit
+          number to the end of linked clones and instant clones to avoid name collision errors. Also fixed a bug in
+          instant clone function.
