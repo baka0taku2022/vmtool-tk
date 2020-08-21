@@ -5,7 +5,7 @@
 
 from .CloneWin import CloneWin
 from .PromoteDisk import PromoteDisk
-from .ShutdownWin import ShutdownWin
+# from .ShutdownWin import ShutdownWin
 from .FuncLib import *
 
 
@@ -30,8 +30,8 @@ class MainMenu:
                                  value=3, bg='black', fg='white', command=self.menuhandle)
         self.item4 = Radiobutton(master=self.menuFrame, text="Clone DVPortgroup", variable=self.mm,
                                  value=4, bg='black', fg='white', command=self.menuhandle)
-        self.item5 = Radiobutton(master=self.menuFrame, text="Graceful shutdown", variable=self.mm,
-                                 value=5, bg='black', fg='white', command=self.menuhandle)
+        # self.item5 = Radiobutton(master=self.menuFrame, text="Graceful shutdown", variable=self.mm,
+        #                         value=5, bg='black', fg='white', command=self.menuhandle)
         self.item6 = Radiobutton(master=self.menuFrame, text="Quit", variable=self.mm,
                                  value=6, bg='black', fg='white', command=self.menuhandle)
         # place widgets
@@ -40,7 +40,7 @@ class MainMenu:
         self.item2.grid(row=1, column=0, padx=5, pady=5)
         self.item3.grid(row=2, column=0, padx=5, pady=5)
         self.item4.grid(row=3, column=0, padx=5, pady=5)
-        self.item5.grid(row=4, column=0, padx=5, pady=5)
+        # self.item5.grid(row=4, column=0, padx=5, pady=5)
         self.item6.grid(row=5, column=0, padx=5, pady=5)
         # update canvas
         self.mainMenu.update_idletasks()
@@ -59,5 +59,6 @@ class MainMenu:
         elif decision == 4:
             PromoteDisk(data=self.dataset, window_type="dvclone")
         elif decision == 5:
-            ShutdownWin(data=self.dataset)
+            # ShutdownWin(data=self.dataset)
+            pass
         return
