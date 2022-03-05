@@ -13,9 +13,9 @@ class CloneWin:
         self.typewin = wintype
 
         # create widgets
-        self.win = Toplevel(master=self.dataset.rootwin, bg='black')
+        self.win = Toplevel(master=self.dataset.rootwin)
         self.vmframe = Frame(master=self.win)
-        self.vmbox = Listbox(master=self.vmframe, bg='black', fg='white', width=50, height=15, selectmode=MULTIPLE)
+        self.vmbox = Listbox(master=self.vmframe, width=50, height=15, selectmode=MULTIPLE)
         self.vmscroll = Scrollbar(master=self.vmframe, orient=VERTICAL)
         # configure scrollbar for vmbox
         self.vmbox.config(yscrollcommand=self.vmscroll.set)
@@ -25,25 +25,25 @@ class CloneWin:
 
         # create more widgets
         self.linkframe = Frame(master=self.win)
-        self.clonebox = Listbox(master=self.linkframe, bg='black', fg='white', width=50, height=15, selectmode=MULTIPLE)
+        self.clonebox = Listbox(master=self.linkframe, width=50, height=15, selectmode=MULTIPLE)
         self.linkscroll = Scrollbar(master=self.linkframe, orient=VERTICAL)
         # configure scrollbar
         self.clonebox.config(yscrollcommand=self.linkscroll.set)
         self.linkscroll.config(command=self.clonebox.yview)
-        self.tolink = Button(master=self.win, bg='black', fg='white', text='>>',
+        self.tolink = Button(master=self.win, text='>>',
                              command=lambda: mv_lstbox(orig_list=self.vmbox, dest_list=self.clonebox))
-        self.refresh = Button(master=self.win, bg='black', fg='white', text='Refresh VM List',
+        self.refresh = Button(master=self.win, text='Refresh VM List',
                               command=lambda: refresh_lists(orig_list=self.vmbox,
                                                             dest_list=self.clonebox, dataset=self.dataset,
                                                             list_type='vm'))
-        self.tovm = Button(master=self.win, bg='black', fg='white', text='<<',
+        self.tovm = Button(master=self.win, text='<<',
                            command=lambda: mv_lstbox(orig_list=self.clonebox, dest_list=self.vmbox))
-        self.vmlabel = Label(master=self.win, text='Server VM list', bg='black', fg='white')
+        self.vmlabel = Label(master=self.win, text='Server VM list')
         if self.typewin == "linked":
-            self.linklabel = Label(master=self.win, text='Linked Clone VM list', bg='black', fg='white')
+            self.linklabel = Label(master=self.win, text='Linked Clone VM list')
         elif self.typewin == "instant":
-            self.linklabel = Label(master=self.win, text='Instant Clone VM list', bg='black', fg='white')
-        self.executebutton = Button(master=self.win, bg='green', fg='white', text='Send clone task to server.',
+            self.linklabel = Label(master=self.win, text='Instant Clone VM list')
+        self.executebutton = Button(master=self.win, text='Send clone task to server.',
                                     command=self.exe_handle)
 
         # place widgets for vm list

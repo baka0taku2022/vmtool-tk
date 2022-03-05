@@ -1,5 +1,5 @@
 """
-    GUI for login window - for the most part just creates the GUI window. Most of the heavy lifting is done in Vulcan.
+    GUI for login window - for the most part just creates the GUI window.
     -=baka0taku=-
 """
 from tkinter.font import *
@@ -15,7 +15,6 @@ class RootWindow:
         self.dataset = data
         self.dataset.rootwin = self.root = Tk()
         self.root.title('vmtoolTk 0.4')
-        self.root['bg'] = 'black'
         self.default_font: Font
         self.default_font = nametofont("TkDefaultFont")
         self.default_font.configure(size=12)

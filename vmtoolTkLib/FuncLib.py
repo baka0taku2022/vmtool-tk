@@ -1,5 +1,5 @@
 """
-The purpose of this file is to house all of the general functions for the program so that things only have to be
+The purpose of this file is to house all the general functions for the program so that things only have to be
 written once.
 
 -=baka0taku=-
@@ -29,7 +29,7 @@ def make_connection(dataset: DataTree, fqdn: str, user: str, passwd: str) -> boo
         dataset.connection = None
         return False
     except Exception as e:
-        showerror(title='Error', message=e)
+        showerror(title='Error', message=str(e))
         dataset.connection = None
         return False
 
@@ -63,6 +63,7 @@ def mv_lstbox(orig_list: Listbox, dest_list: Listbox) -> None:
 
 
 # refresh lists
+# TODO check for differences before refreshing lists
 def refresh_lists(orig_list: Listbox, dataset: DataTree, list_type: str, dest_list: Listbox = None) -> None:
     # clear both lists
     orig_list.delete(0, END)
@@ -90,14 +91,14 @@ def send_clone_task(names: list, data: DataTree, typeclone: str) -> bool:
 
     # send clone task(s) to vCenter
     if typeclone == "linked":
-        alreadyclones = list()
+        alreadyclones: list = list()
         for vm in vmobjs:
             if is_clone(vm=vm):
                 alreadyclones.append(vm.name)
         if len(alreadyclones) > 0:
-            dowecontinue = askyesno(title='Warning',
-                                    message=",\n".join(
-                                        alreadyclones) + '\nThese machines are already clones. Continue?')
+            dowecontinue: bool = askyesno(title='Warning',
+                                          message=",\n".join(alreadyclones) +
+                                                  '\nThese machines are already clones. Continue?')
             if not dowecontinue:
                 return False
         for cl in vmobjs:
@@ -112,13 +113,12 @@ def send_clone_task(names: list, data: DataTree, typeclone: str) -> bool:
                 return False
         # check frozen
         notfrozen = list()
-        cont = None
         for vm in vmobjs:
             if not is_frozen(vm=vm):
                 notfrozen.append(vm.name)
         if len(notfrozen) > 0:
-            cont = askyesno(title="Continue?",
-                            message=",\n".join(notfrozen) + "\n These machines are not frozen. Continue?")
+            cont: bool = askyesno(title="Continue?",
+                                  message=",\n".join(notfrozen) + "\n These machines are not frozen. Continue?")
             # make instant clones
             if cont:
                 for vm in vmobjs:
@@ -213,7 +213,7 @@ def promote_clone(vmobj: vim.VirtualMachine) -> bool:
 def clone_dvportgroup(pgobj: vim.dvs.DistributedVirtualPortgroup) -> bool:
     parentcfg = pgobj.config
     clonecfg = vim.DVPortgroupConfigSpec()
-    randnumext = str(random.randint(100000, 999999))
+    randnumext: str = str(random.randint(100000, 999999))
     clonename = parentcfg.name + '-' + randnumext
     # get DVPortgroupConfigSpec from parent
     clonecfg.autoExpand = parentcfg.autoExpand
@@ -244,41 +244,40 @@ def clone_dvportgroup(pgobj: vim.dvs.DistributedVirtualPortgroup) -> bool:
     return True
 
 
-# graceful shutdown
-def graceful_shutdown(data: DataTree, log: Text, parent_win: Toplevel):
-    # TODO write code to check for vCenter on one of the datacenter hosts
-    root = parent_win
-    textlog = log
-    dataset = data
-    frozenvms = list()
-    onvms = list()
-    # find frozen VMs
-    for vm in dataset.vmobjlist.view:
-        if is_frozen(vm=vm):
-            frozenvms.append(vm)
-    # find powered on VMs
-    for vm in dataset.vmobjlist.view:
-        if is_powered_on(vm=vm):
-            onvms.append(vm)
-
-    # power off frozen VMs
-    for vm in frozenvms:
-        poweroff_vm(vmobj=vm)
-    # shutdown powered on VMs
-    for vm in onvms:
-        # check to see if vms are already powered off just in case some frozen ones got added
-        if is_powered_off(vm):
-            continue
-        poweroff_vm(vmobj=vm)
-    # get all hosts
-    # put all hosts in maintenance mode
-    # shutdown hosts
-    # show logon window for ESXi that holds vCenter
-    # shut down vCenter
-    # put last ESXi in maintenance mode
-    # shut down last ESXi
-
-    return
+# # graceful shutdown
+# def graceful_shutdown(data: DataTree, log: Text, parent_win: Toplevel):
+#     root = parent_win
+#     textlog = log
+#     dataset = data
+#     frozenvms = list()
+#     onvms = list()
+#     # find frozen VMs
+#     for vm in dataset.vmobjlist.view:
+#         if is_frozen(vm=vm):
+#             frozenvms.append(vm)
+#     # find powered on VMs
+#     for vm in dataset.vmobjlist.view:
+#         if is_powered_on(vm=vm):
+#             onvms.append(vm)
+#
+#     # power off frozen VMs
+#     for vm in frozenvms:
+#         poweroff_vm(vmobj=vm)
+#     # shutdown powered on VMs
+#     for vm in onvms:
+#         # check to see if vms are already powered off just in case some frozen ones got added
+#         if is_powered_off(vm):
+#             continue
+#         poweroff_vm(vmobj=vm)
+#     # get all hosts
+#     # put all hosts in maintenance mode
+#     # shutdown hosts
+#     # show logon window for ESXi that holds vCenter
+#     # shut down vCenter
+#     # put last ESXi in maintenance mode
+#     # shut down last ESXi
+#
+#     return
 
 
 # shutdown VM guest
@@ -322,6 +321,7 @@ def is_clone(vm: vim.VirtualMachine) -> bool:
         return False
 
 
+# Is VM powered ON?
 def is_powered_on(vm: vim.VirtualMachine) -> bool:
     if str(vm.runtime.powerState) == "poweredOn":
         return True
@@ -329,6 +329,7 @@ def is_powered_on(vm: vim.VirtualMachine) -> bool:
         return False
 
 
+# Is VM frozen?
 def is_frozen(vm: vim.VirtualMachine) -> bool:
     if vm.runtime.instantCloneFrozen:
         return True
@@ -336,6 +337,7 @@ def is_frozen(vm: vim.VirtualMachine) -> bool:
         return False
 
 
+# Is VM powered OFF
 def is_powered_off(vm: vim.VirtualMachine) -> bool:
     if str(vm.runtime.powerState) == "poweredOff":
         return True
@@ -343,9 +345,214 @@ def is_powered_off(vm: vim.VirtualMachine) -> bool:
         return False
 
 
+# add to Log widget
 def append_log(log: Text, message: str, parent_win: Toplevel) -> None:
     log.insert(END, message + '\n')
     log.see(END)
     parent_win.update_idletasks()
     return
-# TODO write 'is' functions for hosts (maintenance mode, power on, power off)
+
+
+# Is host powered ON
+def is_host_powered_on(hostobj: vim.HostSystem) -> bool:
+    if str(hostobj.runtime.powerState) == "poweredOn":
+        return True
+    else:
+        return False
+
+
+# Is host powered OFF
+def is_host_powered_off(hostobj: vim.HostSystem) -> bool:
+    if str(hostobj.runtime.powerState) == "poweredOff":
+        return True
+    else:
+        return False
+
+
+# Is host in maintenance mode?
+def is_host_in_maint_mode(hostobj: vim.HostSystem) -> bool:
+    if hostobj.runtime.inMaintenanceMode:
+        return True
+    else:
+        return False
+
+
+# Get USB Hid code
+def code_lookup(to_encode: str) -> str:
+    keycodes = {
+        "a": "4",
+        "b": "5",
+        "c": "6",
+        "d": "7",
+        "e": "8",
+        "f": "9",
+        "g": "a",
+        "h": "b",
+        "i": "c",
+        "j": "d",
+        "k": "e",
+        "l": "f",
+        "m": "10",
+        "n": "11",
+        "o": "12",
+        "p": "13",
+        "q": "14",
+        "r": "15",
+        "s": "16",
+        "t": "17",
+        "u": "18",
+        "v": "19",
+        "w": "1a",
+        "x": "1b",
+        "y": "1c",
+        "z": "1d",
+        "1": "1e",
+        "2": "1f",
+        "3": "20",
+        "4": "21",
+        "5": "22",
+        "6": "23",
+        "7": "24",
+        "8": "25",
+        "9": "26",
+        "0": "27",
+        "enter": "28",
+        "etc": "29",
+        "backspace": "2a",
+        "tab": "2b",
+        " ": "2c",
+        "-": "2d",
+        "=": "2e",
+        "[": "2f",
+        "]": "30",
+        "\\": "31",
+        ";": "33",
+        "'": "34",
+        "`": "35",
+        ",": "36",
+        ".": "37",
+        "/": "38",
+        "caps": "39",
+        "F1": "3a",
+        "F2": "3b",
+        "F3": "3c",
+        "F4": "3d",
+        "F5": "3e",
+        "F6": "3f",
+        "F7": "40",
+        "F8": "41",
+        "F9": "42",
+        "F10": "43",
+        "F11": "44",
+        "F12": "45",
+        "prtscr": "46",
+        "scl": "47",
+        "pause": "48",
+        "insert": "49",
+        "home": "4a",
+        "pgup": "4b",
+        "del": "4c",
+        "end": "4d",
+        "pgdn": "4e",
+        "right": "4f",
+        "left": "50",
+        "down": "51",
+        "up": "52",
+        "A": "4",
+        "B": "5",
+        "C": "6",
+        "D": "7",
+        "E": "8",
+        "F": "9",
+        "G": "a",
+        "H": "b",
+        "I": "c",
+        "J": "d",
+        "K": "e",
+        "L": "f",
+        "M": "10",
+        "N": "11",
+        "O": "12",
+        "P": "13",
+        "Q": "14",
+        "R": "15",
+        "S": "16",
+        "T": "17",
+        "U": "18",
+        "V": "19",
+        "W": "1a",
+        "X": "1b",
+        "Y": "1c",
+        "Z": "1d",
+        "!": "1e",
+        "@": "1f",
+        "#": "20",
+        "$": "21",
+        "%": "22",
+        "^": "23",
+        "&": "24",
+        "*": "25",
+        "(": "26",
+        ")": "27",
+        "_": "28",
+        "+": "29",
+        "{": "2a",
+        "}": "2b",
+        "|": "2c",
+        ":": "2d",
+        '"': "2e",
+        "~": "2f",
+        "<": "30",
+        ">": "31",
+        "?": "32"
+    }
+    return keycodes.get(to_encode)
+
+
+def key_combo(normal_key: str, left_alt: bool, left_shift: bool, left_ctrl: bool, left_gui: bool,
+              special_key: str) -> vim.UsbScanCodeSpec:
+    # build spec object
+    spec = vim.UsbScanCodeSpec()
+    key_event = vim.UsbScanCodeSpec.KeyEvent()
+    key_events = list()
+    modifier_type = vim.UsbScanCodeSpec.ModifierType()
+    key_event.modifiers = modifier_type
+    key_events.append(key_event)
+    spec.keyEvents = key_events
+
+    # check parameters
+    if normal_key:
+        spec.keyEvents[0].usbHidCode = int(code_lookup(to_encode=normal_key))
+    elif special_key:
+        spec.keyEvents[0].usbHidCode = int(code_lookup(to_encode=special_key))
+
+    # check bools
+    if left_alt:
+        spec.keyEvents[0].modifiers.leftAlt = True
+    else:
+        spec.keyEvents[0].modifiers.leftAlt = False
+    if left_shift:
+        spec.keyEvents[0].modifiers.leftShift = True
+    else:
+        spec.keyEvents[0].modifiers.leftShift = False
+    if left_ctrl:
+        spec.keyEvents[0].modifiers.leftControl = True
+    else:
+        spec.keyEvents[0].modifiers.leftControl = False
+    if left_gui:
+        spec.keyEvents[0].modifiers.leftGui = True
+    else:
+        spec.keyEvents[0].modifiers.leftGui = False
+    return spec
+
+def str_to_usb(input:str) -> vim.UsbScanCodeSpec:
+    # clear out newlines
+    input.replace("\n", ' ')
+    spec = vim.UsbScanCodeSpec()
+    key_events = list()
+    for key in input:
+        evt = vim.UsbScanCodeSpec.KeyEvent()
+        evt.usbHidCode = code_lookup(to_encode=key)
+        key_events.append(evt)
+    spec.keyEvents = key_events
+    return spec

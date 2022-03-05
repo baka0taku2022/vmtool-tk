@@ -13,11 +13,11 @@ class PromoteDisk:
         self.dataset = data
 
         # define widgets
-        self.win = Toplevel(master=self.dataset.rootwin, bg='black')
+        self.win = Toplevel(master=self.dataset.rootwin)
         if window_type == "promote":
-            self.vmlabel = Label(master=self.win, text='Choose VMs to promote', bg='black', fg='white')
+            self.vmlabel = Label(master=self.win, text='Choose VMs to promote')
         elif window_type == "dvclone":
-            self.vmlabel = Label(master=self.win, text='Choose DVPortgroup to clone', bg='black', fg='white')
+            self.vmlabel = Label(master=self.win, text='Choose DVPortgroup to clone')
         self.vmframe = Frame(master=self.win)
         if window_type == "promote":
             self.vmbox = Listbox(master=self.vmframe, bg='black', fg='white', width=50, height=15, selectmode=MULTIPLE)
@@ -28,17 +28,17 @@ class PromoteDisk:
         self.vmscroll.config(command=self.vmbox.yview)
         if window_type == "promote":
             self.vmbox.insert(END, *sorted(list(self.dataset.vmdict.keys())))
-            self.refresh = Button(master=self.win, bg='black', fg='white', text='Refresh VM List',
+            self.refresh = Button(master=self.win, text='Refresh VM List',
                                   command=lambda: refresh_lists(orig_list=self.vmbox,
                                                                 dest_list=None, dataset=self.dataset, list_type='vm'))
-            self.executebutton = Button(master=self.win, bg='green', fg='white', text='Send promote task to server.',
+            self.executebutton = Button(master=self.win, text='Send promote task to server.',
                                         command=lambda: self.exe_handle(window_type=window_type))
         elif window_type == "dvclone":
             self.vmbox.insert(END, *sorted(list(self.dataset.dvportgroupdict.keys())))
-            self.refresh = Button(master=self.win, bg='black', fg='white', text='Refresh DVPortgroup List',
+            self.refresh = Button(master=self.win, text='Refresh DVPortgroup List',
                                   command=lambda: refresh_lists(orig_list=self.vmbox,
                                                                 dest_list=None, dataset=self.dataset, list_type='pg'))
-            self.executebutton = Button(master=self.win, bg='green', fg='white', text='Send clone task to server.',
+            self.executebutton = Button(master=self.win, text='Send clone task to server.',
                                         command=lambda: self.exe_handle(window_type=window_type))
         # place widgets
         self.vmlabel.grid(row=0, column=0, padx=20, pady=5)

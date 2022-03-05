@@ -13,35 +13,29 @@ class ConnectionWin:
         self.dataset = data
         self.conntype = ctype
         # build login screen
-        self.connwin = Toplevel(master=self.dataset.rootwin, bg="black")
+        self.connwin = Toplevel(master=self.dataset.rootwin)
         self.connwin.master.withdraw()
-        self.connwin.protocol("WM_DELETE_WINDOW", lambda: cleanup(dataset=self.dataset, rootwin=self.connwin.master))
+        self.connwin.protocol("WM_DELETE_WINDOW", lambda: cleanup(dataset=self.dataset, rootwin=self.dataset.rootwin))
         # set var for status bar
         self.stat = StringVar()
         self.stat.set('Idle...')
 
         # define widgets
-        self.serverentry = Entry(master=self.connwin, width=50, relief=SUNKEN, bd=5, bg='black', fg='white',
-                                 insertbackground='white')
+        self.serverentry = Entry(master=self.connwin, width=50)
         if self.conntype == "vcenter":
-            self.serverlabel = Label(master=self.connwin, text="Enter a FQDN or IP Address of vCenter", padx=5, pady=5,
-                                     bg='black', fg='white')
-            self.userlabel = Label(master=self.connwin, text="Enter Username", padx=5, bg='black', fg='white')
-            self.userentry = Entry(master=self.connwin, width=50, relief=SUNKEN, bd=5, bg='black', fg='white',
-                                   insertbackground='white')
+            self.serverlabel = Label(master=self.connwin, text="Enter a FQDN or IP Address of vCenter", padx=5, pady=5)
+            self.userlabel = Label(master=self.connwin, text="Enter Username", padx=5)
+            self.userentry = Entry(master=self.connwin, width=50)
         elif self.conntype == "esxi":
-            self.serverlabel = Label(master=self.connwin, text="Enter a FQDN or IP Address of ESXi", padx=5, pady=5,
-                                     bg='black', fg='white')
-            self.userlabel = Label(master=self.connwin, text="Username (change if not root)", padx=5, bg='black', fg='white')
-            self.userentry = Entry(master=self.connwin, width=50, relief=SUNKEN, bd=5, bg='black', fg='white',
-                                   insertbackground='white')
+            self.serverlabel = Label(master=self.connwin, text="Enter a FQDN or IP Address of ESXi", padx=5, pady=5)
+            self.userlabel = Label(master=self.connwin, text="Username (change if not root)", padx=5)
+            self.userentry = Entry(master=self.connwin, width=50)
             self.userentry.insert(0, "root")
 
-        self.passlabel = Label(master=self.connwin, text="Enter Password", padx=5, bg='black', fg='white')
-        self.passentry = Entry(master=self.connwin, width=50, relief=SUNKEN, bd=5, show='*', bg='black', fg='white',
-                               insertbackground='white')
-        self.statusBar = Label(master=self.connwin, bd=5, relief=SUNKEN, bg='black', fg='white', textvariable=self.stat)
-        self.loginbutton = Button(master=self.connwin, text="Login", width=10, bg='green', fg='white',
+        self.passlabel = Label(master=self.connwin, text="Enter Password", padx=5)
+        self.passentry = Entry(master=self.connwin, width=50, show='*')
+        self.statusBar = Label(master=self.connwin, textvariable=self.stat)
+        self.loginbutton = Button(master=self.connwin, text="Login", width=10,
                                   command=lambda: self.login_button(fqdn=self.serverentry.get(),
                                                                     user=self.userentry.get(),
                                                                     passwd=self.passentry.get()))
