@@ -5,7 +5,6 @@
 
 from .CloneWin import CloneWin
 from .PromoteDisk import PromoteDisk
-from .ShutdownWin import ShutdownWin
 from .FuncLib import *
 from .PasteWin import PasteWin
 
@@ -31,11 +30,9 @@ class MainMenu:
                                  value=3, command=self.menuhandle)
         self.item4 = Radiobutton(master=self.menuFrame, text="Clone DVPortgroup", variable=self.mm,
                                  value=4, command=self.menuhandle)
-        self.item5 = Radiobutton(master=self.menuFrame, text="Graceful shutdown", variable=self.mm,
-                                 value=5, command=self.menuhandle)
-        self.item6 = Radiobutton(master=self.menuFrame, text="Paste into VM", variable=self.mm,
+        self.item5 = Radiobutton(master=self.menuFrame, text="Paste into VM", variable=self.mm,
                                  value=6, command=self.menuhandle)
-        self.item7 = Radiobutton(master=self.menuFrame, text="Quit", variable=self.mm,
+        self.item6 = Radiobutton(master=self.menuFrame, text="Quit", variable=self.mm,
                                  value=7, command=self.menuhandle)
         # place widgets
         self.menuFrame.grid(row=0, column=0, padx=50, pady=50)
@@ -45,14 +42,13 @@ class MainMenu:
         self.item4.grid(row=3, column=0, padx=5, pady=5)
         self.item5.grid(row=4, column=0, padx=5, pady=5)
         self.item6.grid(row=5, column=0, padx=5, pady=5)
-        self.item7.grid(row=6, column=0, padx=5, pady=5)
         # update canvas
         self.mainMenu.update_idletasks()
 
     # menu handling method
     def menuhandle(self) -> None:
         decision = self.mm.get()
-        if decision == 7:
+        if decision == 6:
             cleanup(dataset=self.dataset, rootwin=self.dataset.rootwin)
         elif decision == 1:
             CloneWin(data=self.dataset, wintype="linked")
@@ -63,7 +59,5 @@ class MainMenu:
         elif decision == 4:
             PromoteDisk(data=self.dataset, window_type="dvclone")
         elif decision == 5:
-            ShutdownWin(data=self.dataset)
-        elif decision == 6:
             PasteWin(data=self.dataset)
         return
