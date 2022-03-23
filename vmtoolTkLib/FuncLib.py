@@ -63,7 +63,6 @@ def mv_lstbox(orig_list: Listbox, dest_list: Listbox) -> None:
 
 
 # refresh lists
-# TODO check for differences before refreshing lists
 def refresh_lists(orig_list: Listbox, dataset: DataTree, list_type: str, dest_list: Listbox = None) -> None:
     # clear both lists
     orig_list.delete(0, END)

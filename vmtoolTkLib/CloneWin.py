@@ -17,9 +17,11 @@ class CloneWin:
         self.vmframe = Frame(master=self.win)
         self.vmbox = Listbox(master=self.vmframe, width=50, height=15, selectmode=MULTIPLE)
         self.vmscroll = Scrollbar(master=self.vmframe, orient=VERTICAL)
+
         # configure scrollbar for vmbox
         self.vmbox.config(yscrollcommand=self.vmscroll.set)
         self.vmscroll.config(command=self.vmbox.yview)
+
         # add vm list to vmbox
         self.vmbox.insert(END, *sorted(list(self.dataset.vmdict.keys())))
 

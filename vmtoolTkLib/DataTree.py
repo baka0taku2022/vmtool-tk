@@ -5,9 +5,8 @@ from pyVmomi import vim
 
 class DataTree:
     """
-    One dataset to rule them all. This object holds all of th common data used by the program. It is written in
+    One dataset to rule them all. This object holds all of the common data used by the program. It is written in
     singleton format to avoid duplicating the data, and use of global variables.
-    TODO add tree of logical folders for VMs
 
     -=baka0taku=-
     """
