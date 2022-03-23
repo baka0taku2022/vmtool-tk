@@ -8,7 +8,7 @@ from .FuncLib import *
 class VmStatusWindow:
     def __init__(self, dataset: DataTree):
         self.data: DataTree = dataset
-        self.cpuvar: StringVar = str()
+        self.cpuvar: StringVar = StringVar()
 
         # define widgets
         self.top_level = Toplevel(master=self.data.rootwin)
