@@ -87,20 +87,8 @@ def send_clone_task(names: list, data: DataTree, typeclone: str) -> bool:
     # get vm objects from dataset
     for name in vmnames:
         vmobjs.append(dataset.vmdict[name])
-    # check for existing clones
-
     # send clone task(s) to vCenter
     if typeclone == "linked":
-        alreadyclones: list = list()
-        for vm in vmobjs:
-            if is_clone(vm=vm):
-                alreadyclones.append(vm.name)
-        if len(alreadyclones) > 0:
-            dowecontinue: bool = askyesno(title='Warning',
-                                          message=",\n".join(alreadyclones) +
-                                                  '\nThese machines are already clones. Continue?')
-            if not dowecontinue:
-                return False
         for cl in vmobjs:
             if not make_linked_clone(cl):
                 return False
@@ -129,8 +117,6 @@ def send_clone_task(names: list, data: DataTree, typeclone: str) -> bool:
             for vm in vmobjs:
                 if not make_instant_clone(vmobj=vm):
                     return False
-
-    showinfo(title='Information', message=str(len(vmobjs)) + ' clone jobs sent to server.')
     return True
 
 
@@ -215,6 +201,7 @@ def clone_dvportgroup(pgobj: vim.dvs.DistributedVirtualPortgroup) -> bool:
     clonecfg = vim.DVPortgroupConfigSpec()
     randnumext: str = str(random.randint(100000, 999999))
     clonename = parentcfg.name + '-' + randnumext
+
     # get DVPortgroupConfigSpec from parent
     clonecfg.autoExpand = parentcfg.autoExpand
     clonecfg.backingType = parentcfg.backingType
@@ -244,42 +231,6 @@ def clone_dvportgroup(pgobj: vim.dvs.DistributedVirtualPortgroup) -> bool:
     return True
 
 
-# # graceful shutdown
-# def graceful_shutdown(data: DataTree, log: Text, parent_win: Toplevel):
-#     root = parent_win
-#     textlog = log
-#     dataset = data
-#     frozenvms = list()
-#     onvms = list()
-#     # find frozen VMs
-#     for vm in dataset.vmobjlist.view:
-#         if is_frozen(vm=vm):
-#             frozenvms.append(vm)
-#     # find powered on VMs
-#     for vm in dataset.vmobjlist.view:
-#         if is_powered_on(vm=vm):
-#             onvms.append(vm)
-#
-#     # power off frozen VMs
-#     for vm in frozenvms:
-#         poweroff_vm(vmobj=vm)
-#     # shutdown powered on VMs
-#     for vm in onvms:
-#         # check to see if vms are already powered off just in case some frozen ones got added
-#         if is_powered_off(vm):
-#             continue
-#         poweroff_vm(vmobj=vm)
-#     # get all hosts
-#     # put all hosts in maintenance mode
-#     # shutdown hosts
-#     # show logon window for ESXi that holds vCenter
-#     # shut down vCenter
-#     # put last ESXi in maintenance mode
-#     # shut down last ESXi
-#
-#     return
-
-
 # shutdown VM guest
 def shutdown_vm(vmobj: vim.VirtualMachine) -> bool:
     if not vmobj.ShutdownGuest():
@@ -306,19 +257,6 @@ def host_shut_down(hostobj: vim.HostSystem) -> bool:
     if not hostobj.ShutdownHost_Task(force=True):
         return False
     return True
-
-
-# is a clone
-def is_clone(vm: vim.VirtualMachine) -> bool:
-    disklist = vm.layout.disk[0].diskFile
-    newlist = []
-    for disk in disklist:
-        newlist.append(disk[disk.find(" ") + 1:disk.rfind("/")])
-    numdiskbacking = len(set(newlist))
-    if numdiskbacking > 1:
-        return True
-    else:
-        return False
 
 
 # Is VM powered ON?
@@ -545,7 +483,8 @@ def key_combo(normal_key: str, left_alt: bool, left_shift: bool, left_ctrl: bool
         spec.keyEvents[0].modifiers.leftGui = False
     return spec
 
-def str_to_usb(input:str) -> vim.UsbScanCodeSpec:
+
+def str_to_usb(input: str) -> vim.UsbScanCodeSpec:
     # clear out newlines
     input.replace("\n", ' ')
     spec = vim.UsbScanCodeSpec()
@@ -556,3 +495,17 @@ def str_to_usb(input:str) -> vim.UsbScanCodeSpec:
         key_events.append(evt)
     spec.keyEvents = key_events
     return spec
+
+
+# multiple clone functions
+def multi_linked_clones(vm_names: list, num_of_clones: int, data: DataTree) -> None:
+    for x in range(num_of_clones):
+        send_clone_task(names=vm_names, data=data, typeclone="linked")
+    return
+
+
+def multi_instant_clones(vm_names: list, num_of_clones: int, data: DataTree) -> None:
+    for x in range(num_of_clones):
+        send_clone_task(names=vm_names, data=data, typeclone="instant")
+    return
+# TODO write status functions

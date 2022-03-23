@@ -31,9 +31,9 @@ class MainMenu:
         self.item4 = Radiobutton(master=self.menuFrame, text="Clone DVPortgroup", variable=self.mm,
                                  value=4, command=self.menuhandle)
         self.item5 = Radiobutton(master=self.menuFrame, text="Paste into VM", variable=self.mm,
-                                 value=6, command=self.menuhandle)
+                                 value=5, command=self.menuhandle)
         self.item6 = Radiobutton(master=self.menuFrame, text="Quit", variable=self.mm,
-                                 value=7, command=self.menuhandle)
+                                 value=6, command=self.menuhandle)
         # place widgets
         self.menuFrame.grid(row=0, column=0, padx=50, pady=50)
         self.item1.grid(row=0, column=0, padx=5, pady=5)

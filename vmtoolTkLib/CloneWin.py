@@ -46,6 +46,16 @@ class CloneWin:
         self.executebutton = Button(master=self.win, text='Send clone task to server.',
                                     command=self.exe_handle)
 
+        # define spinbox in frame
+        self.spin_frame = Frame(master=self.win)
+        self.spin_label = Label(master=self.spin_frame, text="Number of clones")
+        self.num_of_clones = Spinbox(master=self.spin_frame, from_=1, to=255)
+
+        # place widgets for spin_frame and place spin frame
+        self.spin_frame.grid(row=4, column=2)
+        self.spin_label.pack(side=LEFT)
+        self.num_of_clones.pack(side=RIGHT)
+
         # place widgets for vm list
         self.vmlabel.grid(row=0, column=0, padx=20, pady=5)
         self.vmframe.grid(row=1, column=0, padx=20, pady=20, rowspan=3)
@@ -61,9 +71,15 @@ class CloneWin:
         self.tolink.grid(row=1, column=2, padx=20, pady=20)
         self.refresh.grid(row=2, column=2, padx=20, pady=20)
         self.tovm.grid(row=3, column=2, padx=20, pady=20)
-        self.executebutton.grid(row=4, column=0, padx=20, pady=20, columnspan=5, sticky=W + E)
+        self.executebutton.grid(row=5, column=0, padx=20, pady=20, columnspan=5, sticky=W + E)
 
     def exe_handle(self) -> None:
-        if send_clone_task(names=list(self.clonebox.get(0, END)), data=self.dataset, typeclone=self.typewin):
+        if self.typewin == "linked":
+            multi_linked_clones(vm_names=list(self.clonebox.get(0, END)), num_of_clones=int(self.num_of_clones.get()),
+                                data=self.dataset)
+            self.win.destroy()
+        else:
+            multi_instant_clones(vm_names=list(self.clonebox.get(0, END)), num_of_clones=int(self.num_of_clones.get()),
+                                 data=self.dataset)
             self.win.destroy()
         return
