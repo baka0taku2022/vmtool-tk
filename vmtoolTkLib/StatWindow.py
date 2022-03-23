@@ -1,13 +1,14 @@
 """
     GUI for status window - for the most part just creates the GUI window. Most of the heavy lifting is done in FuncLib.
     This file contains an exception. For some reason that I haven't ferreted out yet attempting to move the data parsing
-    to FuncLib causes it to break with circular dependencies.
+    to FuncLib causes it to break with circular dependencies. Have to ignore errors where, on a production system, the
+    landscape of Managed Objects is constantly changing. I know it is a hack, but it is best for now.
 
     -=baka0taku=-
 """
+import pyVmomi
 
-from pyVmomi import vim
-from vmtoolTkLib.FuncLib import *
+from .FuncLib import *
 
 
 class StatWindow:
@@ -33,9 +34,13 @@ class StatWindow:
         self.dataset.content = self.dataset.connection.RetrieveContent()
         # get all VMs
         self.dataset.vmobjlist = self.dataset.content.viewManager.CreateContainerView(self.dataset.content.rootFolder,
-                                                                                      [vim.VirtualMachine], True)
-        for vm in self.dataset.vmobjlist.view:
-            self.dataset.vmdict[vm.name] = vm
+                                                                              [vim.VirtualMachine], True)
+        try:
+            for vm in self.dataset.vmobjlist.view:
+                self.dataset.vmdict[vm.name] = vm
+        except pyVmomi.vmodl.fault.ManagedObjectNotFound:
+            pass
+
         # get all hosts
         self.dataset.hostobjlist = self.dataset.content.viewManager.CreateContainerView(self.dataset.content.rootFolder,
                                                                                         [vim.HostSystem], True)
@@ -47,15 +52,19 @@ class StatWindow:
             [vim.Datastore], True)
         for ds in self.dataset.datastoreobjlist.view:
             self.dataset.datastoredict[ds.name] = ds
+
         # get all networks
         self.dataset.networkobjlist = self.dataset.content.viewManager.CreateContainerView(
             self.dataset.content.rootFolder,
             [vim.Network], True)
-        for net in self.dataset.networkobjlist.view:
-            if type(net) is vim.dvs.DistributedVirtualPortgroup:
-                self.dataset.dvportgroupdict[net.name] = net
-            else:
-                self.dataset.networkdict[net.name] = net
+        try:
+            for net in self.dataset.networkobjlist.view:
+                if type(net) is vim.dvs.DistributedVirtualPortgroup:
+                    self.dataset.dvportgroupdict[net.name] = net
+                else:
+                    self.dataset.networkdict[net.name] = net
+        except pyVmomi.vmodl.fault.ManagedObjectNotFound:
+            pass
         # get all dvswitches
         self.dataset.dvswitchobjlist = self.dataset.content.viewManager.CreateContainerView(
             self.dataset.content.rootFolder,
