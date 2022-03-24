@@ -128,7 +128,7 @@ def send_promote_task(names: list, data: DataTree) -> bool:
         vmobjs.append(dataset.vmdict[name])
     # check for power on
     for vm in vmobjs:
-        if not str(vm.runtime.powerState) == "poweredOff":
+        if not is_powered_off(vm):
             showerror(title='Error',
                       message=vm.name + ' is not in a Powered Off state. Power it off before attempting to promote')
             return False
@@ -315,135 +315,138 @@ def is_host_in_maint_mode(hostobj: vim.HostSystem) -> bool:
 
 
 # Get USB Hid code
-def code_lookup(to_encode: str) -> str:
+def code_lookup(to_encode: str) -> int:
     keycodes = {
-        "a": "4",
-        "b": "5",
-        "c": "6",
-        "d": "7",
-        "e": "8",
-        "f": "9",
-        "g": "a",
-        "h": "b",
-        "i": "c",
-        "j": "d",
-        "k": "e",
-        "l": "f",
-        "m": "10",
-        "n": "11",
-        "o": "12",
-        "p": "13",
-        "q": "14",
-        "r": "15",
-        "s": "16",
-        "t": "17",
-        "u": "18",
-        "v": "19",
-        "w": "1a",
-        "x": "1b",
-        "y": "1c",
-        "z": "1d",
-        "1": "1e",
-        "2": "1f",
-        "3": "20",
-        "4": "21",
-        "5": "22",
-        "6": "23",
-        "7": "24",
-        "8": "25",
-        "9": "26",
-        "0": "27",
-        "enter": "28",
-        "etc": "29",
-        "backspace": "2a",
-        "tab": "2b",
-        " ": "2c",
-        "-": "2d",
-        "=": "2e",
-        "[": "2f",
-        "]": "30",
-        "\\": "31",
-        ";": "33",
-        "'": "34",
-        "`": "35",
-        ",": "36",
-        ".": "37",
-        "/": "38",
-        "caps": "39",
-        "F1": "3a",
-        "F2": "3b",
-        "F3": "3c",
-        "F4": "3d",
-        "F5": "3e",
-        "F6": "3f",
-        "F7": "40",
-        "F8": "41",
-        "F9": "42",
-        "F10": "43",
-        "F11": "44",
-        "F12": "45",
-        "prtscr": "46",
-        "scl": "47",
-        "pause": "48",
-        "insert": "49",
-        "home": "4a",
-        "pgup": "4b",
-        "del": "4c",
-        "end": "4d",
-        "pgdn": "4e",
-        "right": "4f",
-        "left": "50",
-        "down": "51",
-        "up": "52",
-        "A": "4",
-        "B": "5",
-        "C": "6",
-        "D": "7",
-        "E": "8",
-        "F": "9",
-        "G": "a",
-        "H": "b",
-        "I": "c",
-        "J": "d",
-        "K": "e",
-        "L": "f",
-        "M": "10",
-        "N": "11",
-        "O": "12",
-        "P": "13",
-        "Q": "14",
-        "R": "15",
-        "S": "16",
-        "T": "17",
-        "U": "18",
-        "V": "19",
-        "W": "1a",
-        "X": "1b",
-        "Y": "1c",
-        "Z": "1d",
-        "!": "1e",
-        "@": "1f",
-        "#": "20",
-        "$": "21",
-        "%": "22",
-        "^": "23",
-        "&": "24",
-        "*": "25",
-        "(": "26",
-        ")": "27",
-        "_": "28",
-        "+": "29",
-        "{": "2a",
-        "}": "2b",
-        "|": "2c",
-        ":": "2d",
-        '"': "2e",
-        "~": "2f",
-        "<": "30",
-        ">": "31",
-        "?": "32"
+        "a": 0x4,
+        "b": 0x5,
+        "c": 0x6,
+        "d": 0x7,
+        "e": 0x8,
+        "f": 0x9,
+        "g": 0xa,
+        "h": 0xb,
+        "i": 0xc,
+        "j": 0xd,
+        "k": 0xe,
+        "l": 0xf,
+        "m": 0x10,
+        "n": 0x11,
+        "o": 0x12,
+        "p": 0x13,
+        "q": 0x14,
+        "r": 0x15,
+        "s": 0x16,
+        "t": 0x17,
+        "u": 0x18,
+        "v": 0x19,
+        "w": 0x1a,
+        "x": 0x1b,
+        "y": 0x1c,
+        "z": 0x1d,
+        "1": 0x1e,
+        "2": 0x1f,
+        "3": 0x20,
+        "4": 0x21,
+        "5": 0x22,
+        "6": 0x23,
+        "7": 0x24,
+        "8": 0x25,
+        "9": 0x26,
+        "0": 0x27,
+        "\n": 0x28,
+        "esc": 0x29,
+        "backspace": 0x2a,
+        "\t": 0x2b,
+        " ": 0x2c,
+        "-": 0x2d,
+        "=": 0x2e,
+        "[": 0x2f,
+        "]": 0x30,
+        "\\": 0x31,
+        ";": 0x33,
+        "'": 0x34,
+        "`": 0x35,
+        ",": 0x36,
+        ".": 0x37,
+        "/": 0x38,
+        "caps": 0x39,
+        "F1": 0x3a,
+        "F2": 0x3b,
+        "F3": 0x3c,
+        "F4": 0x3d,
+        "F5": 0x3e,
+        "F6": 0x3f,
+        "F7": 0x40,
+        "F8": 0x41,
+        "F9": 0x42,
+        "F10": 0x43,
+        "F11": 0x44,
+        "F12": 0x45,
+        "prtscr": 0x46,
+        "scl": 0x47,
+        "pause": 0x48,
+        "insert": 0x49,
+        "home": 0x4a,
+        "pgup": 0x4b,
+        "del": 0x4c,
+        "end": 0x4d,
+        "pgdn": 0x4e,
+        "right": 0x4f,
+        "left": 0x50,
+        "down": 0x51,
+        "up": 0x52,
+        "A": 0x4,
+        "B": 0x5,
+        "C": 0x6,
+        "D": 0x7,
+        "E": 0x8,
+        "F": 0x9,
+        "G": 0xa,
+        "H": 0xb,
+        "I": 0xc,
+        "J": 0xd,
+        "K": 0xe,
+        "L": 0xf,
+        "M": 0x10,
+        "N": 0x11,
+        "O": 0x12,
+        "P": 0x13,
+        "Q": 0x14,
+        "R": 0x15,
+        "S": 0x16,
+        "T": 0x17,
+        "U": 0x18,
+        "V": 0x19,
+        "W": 0x1a,
+        "X": 0x1b,
+        "Y": 0x1c,
+        "Z": 0x1d,
+        "!": 0x1e,
+        "@": 0x1e,
+        "#": 0x20,
+        "$": 0x21,
+        "%": 0x22,
+        "^": 0x23,
+        "&": 0x24,
+        "*": 0x25,
+        "(": 0x26,
+        ")": 0x27,
+        "_": 0x28,
+        "+": 0x29,
+        "{": 0x2a,
+        "}": 0x2b,
+        "|": 0x2c,
+        ":": 0x2d,
+        '"': 0x2e,
+        "~": 0x2f,
+        "<": 0x30,
+        ">": 0x31,
+        "?": 0x32
     }
-    return keycodes.get(to_encode)
+    hidcode = int(keycodes.get(to_encode))
+    hidcode = hidcode << 16
+    hidcode = hidcode | 7
+    return hidcode
 
 
 def key_combo(normal_key: str, left_alt: bool, left_shift: bool, left_ctrl: bool, left_gui: bool,
@@ -485,8 +488,8 @@ def key_combo(normal_key: str, left_alt: bool, left_shift: bool, left_ctrl: bool
 
 def str_to_usb(input: str) -> vim.UsbScanCodeSpec:
     # clear out newlines
-    input.replace("\n", ' ')
-    spec = vim.UsbScanCodeSpec()
+    input = input.replace("\n", '')
+    spec: vim.UsbScanCodeSpec = vim.UsbScanCodeSpec()
     key_events = list()
     for key in input:
         evt = vim.UsbScanCodeSpec.KeyEvent()
@@ -507,4 +510,38 @@ def multi_instant_clones(vm_names: list, num_of_clones: int, data: DataTree) -> 
     for x in range(num_of_clones):
         send_clone_task(names=vm_names, data=data, typeclone="instant")
     return
+
+
 # TODO write status functions
+
+
+# get VM CPU usage
+def get_cpu_usage(vm: vim.VirtualMachine) -> str:
+    return str(vm.summary.quickStats.overallCpuUsage) + " Mhz"
+
+
+# get VM Memory Usage
+def get_memory_usage(vm: vim.VirtualMachine) -> str:
+    return str(vm.summary.quickStats.guestMemoryUsage) + " MB"
+
+
+# get VM disk usage
+def get_disk_usage(vm: vim.VirtualMachine) -> str:
+    size_in_bytes: int = vm.summary.storage.committed
+    size_in_gb: int = int(size_in_bytes / 1073741824)
+    return str(size_in_gb) + " GB"
+
+
+# get number of disks
+def get_num_disks(vm: vim.VirtualMachine) -> str:
+    return str(len(vm.layout.disk))
+
+
+# get num of snapshots
+def get_num_snapshots(vm: vim.VirtualMachine) -> str:
+    return str(len(vm.layout.snapshot))
+
+
+# get number of disk files
+def get_num_disk_files(vm: vim.VirtualMachine) -> str:
+    return str(len(vm.layout.disk[0].diskFile))
