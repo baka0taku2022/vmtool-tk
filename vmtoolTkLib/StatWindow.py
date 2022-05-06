@@ -6,7 +6,7 @@
 
     -=baka0taku=-
 """
-import pyVmomi
+import threading
 
 from .FuncLib import *
 
@@ -23,7 +23,7 @@ class StatWindow:
         self.statWin: Toplevel = Toplevel(master=self.dataset.rootwin)
 
         # define widgets
-        self.container:Frame = Frame(master=self.statWin, padx=20, pady=20)
+        self.container: Frame = Frame(master=self.statWin, padx=20, pady=20)
         self.statlab: Label = Label(master=self.container, textvariable=self.tvar)
         # place widgets
         self.statlab.grid(row=0, column=0, pady=20, sticky=E + W)
@@ -36,61 +36,86 @@ class StatWindow:
     def parse_data(self) -> None:
         # get all content
         self.dataset.content = self.dataset.connection.RetrieveContent()
-        # get all VMs
+
+        # get all Data Sets
+        self.tvar.set("Getting Views From Server...")
+        self.statlab.update()
+
+        # VM set
         self.dataset.vmobjlist = self.dataset.content.viewManager.CreateContainerView(self.dataset.content.rootFolder,
                                                                                       [vim.VirtualMachine], True)
-
-        self.tvar.set("Building VM dictionary...")
-        self.statlab.update()
-        for vm in self.dataset.vmobjlist.view:
-            if vm is not None:
-                self.dataset.vmdict[vm.name] = vm
-            else:
-                continue
-
-        # get all hosts
+        # Hosts set
         self.dataset.hostobjlist = self.dataset.content.viewManager.CreateContainerView(self.dataset.content.rootFolder,
                                                                                         [vim.HostSystem], True)
-        self.tvar.set("Building Host dictionary...")
-        self.statlab.update()
-        for host in self.dataset.hostobjlist.view:
-            self.dataset.hostdict[host.name] = host
-        # get all datastores
+        # Datastore set
         self.dataset.datastoreobjlist = self.dataset.content.viewManager.CreateContainerView(
             self.dataset.content.rootFolder,
             [vim.Datastore], True)
 
-        self.tvar.set("Building Dataset dictionary...")
-        self.statlab.update()
-        for ds in self.dataset.datastoreobjlist.view:
-            self.dataset.datastoredict[ds.name] = ds
-
-        # get all networks
+        # Network set
         self.dataset.networkobjlist = self.dataset.content.viewManager.CreateContainerView(
             self.dataset.content.rootFolder,
             [vim.Network], True)
-        self.tvar.set("Building Portgroup dictionary...")
-        self.statlab.update()
 
-
-        for net in self.dataset.networkobjlist.view:
-            if type(net) is vim.dvs.DistributedVirtualPortgroup:
-                if net is not None:
-                    self.dataset.dvportgroupdict[net.name] = net
-                else:
-                    continue
-            else:
-                if net is not None:
-                    self.dataset.networkdict[net.name] = net
-                else:
-                    continue
-        # get all dvswitches
+        # DVSwitch set
         self.dataset.dvswitchobjlist = self.dataset.content.viewManager.CreateContainerView(
             self.dataset.content.rootFolder,
             [vim.DistributedVirtualSwitch], True)
 
+        # build dictionaries
+        self.tvar.set("Building Host dictionary...")
+        self.statlab.update()
+        for host in self.dataset.hostobjlist.view:
+            self.dataset.hostdict[host.name] = host
+
+        self.tvar.set("Building Dataset dictionary...")
+        self.statlab.update()
+
+        for ds in self.dataset.datastoreobjlist.view:
+            self.dataset.datastoredict[ds.name] = ds
+
         self.tvar.set("Building DVswitch dictionary...")
         self.statlab.update()
+
         for dvs in self.dataset.dvswitchobjlist.view:
             self.dataset.dvswitchdict[dvs.name] = dvs
+
+        # build VM dict
+        def vmdict_builder(vmobjlst: list, new_dict: dict):
+            for vm in vmobjlst:
+                try:
+                    new_dict[vm.name] = vm
+                except pyVmomi.vmodl.fault.ManagedObjectNotFound:
+                    pass
+
+        # build net dict
+        def netdict_builder(net_obj_lst: list, new_dvpg_dict: dict, new_net_dict: dict):
+            for net in net_obj_lst:
+                if type(net) is vim.dvs.DistributedVirtualPortgroup:
+                    try:
+                        new_dvpg_dict[net.name] = net
+                    except pyVmomi.vmodl.fault.ManagedObjectNotFound:
+                        pass
+                else:
+                    try:
+                        new_net_dict[net.name] = net
+                    except pyVmomi.vmodl.fault.ManagedObjectNotFound:
+                        pass
+
+        # define threads
+        t1 = threading.Thread(target=vmdict_builder, args=(self.dataset.vmobjlist.view, self.dataset.vmdict))
+        t2 = threading.Thread(target=netdict_builder, args=(self.dataset.networkobjlist.view,
+                                                            self.dataset.dvportgroupdict, self.dataset.networkdict))
+
+        self.tvar.set("Building Dictionaries for Portgroups and VMs...")
+        self.statlab.update()
+
+        # start threads
+        t1.start()
+        t2.start()
+
+        # wait for threads to finish
+        t1.join()
+        t2.join()
+
         return

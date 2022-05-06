@@ -13,6 +13,7 @@ from tkinter.messagebox import *
 
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim
+import pyVmomi
 
 from .DataTree import DataTree
 from .StatWindow import StatWindow
