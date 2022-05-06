@@ -38,15 +38,15 @@ class StatWindow:
         self.dataset.content = self.dataset.connection.RetrieveContent()
         # get all VMs
         self.dataset.vmobjlist = self.dataset.content.viewManager.CreateContainerView(self.dataset.content.rootFolder,
-                                                                              [vim.VirtualMachine], True)
+                                                                                      [vim.VirtualMachine], True)
 
         self.tvar.set("Building VM dictionary...")
         self.statlab.update()
-        try:
-            for vm in self.dataset.vmobjlist.view:
+        for vm in self.dataset.vmobjlist.view:
+            if vm is not None:
                 self.dataset.vmdict[vm.name] = vm
-        except pyVmomi.vmodl.fault.ManagedObjectNotFound:
-            pass
+            else:
+                continue
 
         # get all hosts
         self.dataset.hostobjlist = self.dataset.content.viewManager.CreateContainerView(self.dataset.content.rootFolder,
@@ -72,14 +72,18 @@ class StatWindow:
         self.tvar.set("Building Portgroup dictionary...")
         self.statlab.update()
 
-        try:
-            for net in self.dataset.networkobjlist.view:
-                if type(net) is vim.dvs.DistributedVirtualPortgroup:
+
+        for net in self.dataset.networkobjlist.view:
+            if type(net) is vim.dvs.DistributedVirtualPortgroup:
+                if net is not None:
                     self.dataset.dvportgroupdict[net.name] = net
                 else:
+                    continue
+            else:
+                if net is not None:
                     self.dataset.networkdict[net.name] = net
-        except pyVmomi.vmodl.fault.ManagedObjectNotFound:
-            pass
+                else:
+                    continue
         # get all dvswitches
         self.dataset.dvswitchobjlist = self.dataset.content.viewManager.CreateContainerView(
             self.dataset.content.rootFolder,
