@@ -245,6 +245,13 @@ def poweroff_vm(vmobj: vim.VirtualMachine) -> bool:
     return True
 
 
+# power on VM
+def power_on_vm(vmobj: vim.VirtualMachine) -> bool:
+    if not vmobj.PowerOnVM_Task():
+        return False
+    return True
+
+
 # put host in Maintenance Mode
 def host_maint_mode_on(hostobj: vim.HostSystem) -> bool:
     if not hostobj.EnterMaintenanceMode_Task(timeout=0):
