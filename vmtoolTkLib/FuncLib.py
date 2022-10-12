@@ -552,4 +552,12 @@ def get_num_snapshots(vm: vim.VirtualMachine) -> str:
 
 # get number of disk files
 def get_num_disk_files(vm: vim.VirtualMachine) -> str:
-    return str(len(vm.layout.disk[0].diskFile))
+    try:
+        return str(len(vm.layout.disk[0].diskFile))
+    except IndexError:
+        return str(0)
+
+# task = vm.CreateSnapshot_Task(name=args.name,
+#                               description=desc,
+#                               memory=True,
+#                               quiesce=False)
