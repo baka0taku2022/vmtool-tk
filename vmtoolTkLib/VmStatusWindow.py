@@ -2,8 +2,8 @@
 Window to display critical VM stats for a selected VM
 CPU usage, RAM usage, Disk Usage, Frozen?, Power state?, Snapshots?, VMDK Files
 '''
+from .SnapshotWindow import SnapshotWindow
 from .FuncLib import *
-
 
 class VmStatusWindow:
     def __init__(self, dataset: DataTree):
@@ -44,7 +44,7 @@ class VmStatusWindow:
         self.power_on_button = Button(master=self.top_level, text="Power On", command=lambda: power_on_handler())
         self.power_off_button = Button(master=self.top_level, text="Power Off", command=lambda: power_off_handler())
         self.promote_button = Button(master=self.top_level, text="Promote", command=lambda: promote_handler())
-        self.snapshot_button = Button(master=self.top_level, text="Create Snapshot")
+        self.snapshot_button = Button(master=self.top_level, text="Create Snapshot", command=lambda: snapshot_handler())
         self.linked_clone_button = Button(master=self.top_level, text="Linked Clone")
         self.instant_clone_button = Button(master=self.top_level, text="Instant Clone")
         self.paste_into_vm_button = Button(master=self.top_level, text="Paste Into VM")
@@ -129,4 +129,8 @@ class VmStatusWindow:
 
         def promote_handler() -> None:
             promote_clone(self.vm_object)
+            return
+
+        def snapshot_handler() -> None:
+            SnapshotWindow(data_set=self.data, vm=self.vm_object)
             return

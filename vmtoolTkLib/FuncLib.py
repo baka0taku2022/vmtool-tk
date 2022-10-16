@@ -520,9 +520,6 @@ def multi_instant_clones(vm_names: list, num_of_clones: int, data: DataTree) -> 
     return
 
 
-# TODO write status functions
-
-
 # get VM CPU usage
 def get_cpu_usage(vm: vim.VirtualMachine) -> str:
     return str(vm.summary.quickStats.overallCpuUsage) + " Mhz"
@@ -557,7 +554,15 @@ def get_num_disk_files(vm: vim.VirtualMachine) -> str:
     except IndexError:
         return str(0)
 
-# task = vm.CreateSnapshot_Task(name=args.name,
-#                               description=desc,
-#                               memory=True,
-#                               quiesce=False)
+
+def create_snapshot(snapshot_name: str, vm: vim.VirtualMachine, snapshot_desc: str, snapshot_memory: bool,
+                    snapshot_quiesce: bool):
+    task = vm.CreateSnapshot_Task(name=snapshot_name,
+                              description=snapshot_desc,
+                              memory=snapshot_memory,
+                              quiesce=snapshot_quiesce)
+    if task.info.error is not None:
+        showerror(title="Error", message=task.info.error.msg)
+        return False
+    else:
+        return True
