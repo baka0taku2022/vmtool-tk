@@ -3,6 +3,7 @@ Window to display critical VM stats for a selected VM
 CPU usage, RAM usage, Disk Usage, Frozen?, Power state?, Snapshots?, VMDK Files
 '''
 from .SnapshotWindow import SnapshotWindow
+from .FreezeWindow import FreezeWindow
 from .FuncLib import *
 
 class VmStatusWindow:
@@ -48,6 +49,7 @@ class VmStatusWindow:
         self.linked_clone_button = Button(master=self.top_level, text="Linked Clone")
         self.instant_clone_button = Button(master=self.top_level, text="Instant Clone")
         self.paste_into_vm_button = Button(master=self.top_level, text="Paste Into VM")
+        self.freeze_button = Button(master=self.top_level, text="Freeze", command=lambda: freeze_handler())
 
         # define scrollbar properties
         self.vm_list.config(yscrollcommand=self.vm_scroll.set)
@@ -83,6 +85,7 @@ class VmStatusWindow:
         self.linked_clone_button.grid(column=3, row=4, padx=10, pady=10)
         self.instant_clone_button.grid(column=3, row=5, padx=10, pady=10)
         self.paste_into_vm_button.grid(column=3, row=6, padx=10, pady=10)
+        self.freeze_button.grid(column=3, row=7, padx=10, pady=10)
 
         # event handler
         def list_handle(event) -> None:
@@ -133,4 +136,8 @@ class VmStatusWindow:
 
         def snapshot_handler() -> None:
             SnapshotWindow(data_set=self.data, vm=self.vm_object)
+            return
+
+        def freeze_handler() -> None:
+            FreezeWindow(data=self.data, vm=self.vm_object)
             return

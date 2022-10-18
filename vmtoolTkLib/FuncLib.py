@@ -6,6 +6,7 @@ written once.
 """
 import random
 import ssl
+import re
 from socket import gaierror
 from time import sleep
 from tkinter import *
@@ -13,7 +14,7 @@ from tkinter.messagebox import *
 
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim
-import pyVmomi
+
 
 from .DataTree import DataTree
 from .StatWindow import StatWindow
@@ -268,17 +269,20 @@ def host_shut_down(hostobj: vim.HostSystem) -> bool:
 
 # Is VM powered ON?
 def is_powered_on(vm: vim.VirtualMachine) -> bool:
-    if str(vm.runtime.powerState) == "poweredOn":
-        return True
-    else:
+    try:
+        if str(vm.runtime.powerState) == "poweredOn":
+            return True
+    except AttributeError:
         return False
+
 
 
 # Is VM frozen?
 def is_frozen(vm: vim.VirtualMachine) -> bool:
-    if vm.runtime.instantCloneFrozen:
-        return True
-    else:
+    try:
+        if vm.runtime.instantCloneFrozen:
+            return True
+    except AttributeError:
         return False
 
 
@@ -440,16 +444,16 @@ def code_lookup(to_encode: str) -> int:
         "(": 0x26,
         ")": 0x27,
         "_": 0x28,
-        "+": 0x29,
-        "{": 0x2a,
-        "}": 0x2b,
-        "|": 0x2c,
-        ":": 0x2d,
-        '"': 0x2e,
-        "~": 0x2f,
-        "<": 0x30,
-        ">": 0x31,
-        "?": 0x32
+        "+": 0x2e,
+        "{": 0x2f,
+        "}": 0x30,
+        "|": 0x31,
+        ":": 0x33,
+        '"': 0x34,
+        "~": 0x35,
+        "<": 0x36,
+        ">": 0x37,
+        "?": 0x38
     }
     hidcode = int(keycodes.get(to_encode))
     hidcode = hidcode << 16
@@ -500,9 +504,18 @@ def str_to_usb(input: str) -> vim.UsbScanCodeSpec:
     spec: vim.UsbScanCodeSpec = vim.UsbScanCodeSpec()
     key_events = list()
     for key in input:
-        evt = vim.UsbScanCodeSpec.KeyEvent()
-        evt.usbHidCode = code_lookup(to_encode=key)
-        key_events.append(evt)
+        regex = r"[A-Z\~\!\@\#\$\%\^\&\*\(\)\_\+\{\}\|\:\"\<\>\?]"
+        if re.match(regex, key):
+            evt = vim.UsbScanCodeSpec.KeyEvent()
+            modifier_type: vim.UsbScanCodeSpec.ModifierType = vim.UsbScanCodeSpec.ModifierType()
+            evt.modifiers = modifier_type
+            evt.modifiers.leftShift = True
+            evt.usbHidCode = code_lookup(to_encode=key)
+            key_events.append(evt)
+        else:
+            evt = vim.UsbScanCodeSpec.KeyEvent()
+            evt.usbHidCode = code_lookup(to_encode=key)
+            key_events.append(evt)
     spec.keyEvents = key_events
     return spec
 
@@ -522,29 +535,44 @@ def multi_instant_clones(vm_names: list, num_of_clones: int, data: DataTree) -> 
 
 # get VM CPU usage
 def get_cpu_usage(vm: vim.VirtualMachine) -> str:
-    return str(vm.summary.quickStats.overallCpuUsage) + " Mhz"
+    try:
+        return str(vm.summary.quickStats.overallCpuUsage) + " Mhz"
+    except AttributeError:
+        return '0 Mhz'
 
 
 # get VM Memory Usage
 def get_memory_usage(vm: vim.VirtualMachine) -> str:
-    return str(vm.summary.quickStats.guestMemoryUsage) + " MB"
+    try:
+        return str(vm.summary.quickStats.guestMemoryUsage) + " MB"
+    except AttributeError:
+        return '0 MB'
 
 
 # get VM disk usage
 def get_disk_usage(vm: vim.VirtualMachine) -> str:
-    size_in_bytes: int = vm.summary.storage.committed
-    size_in_gb: int = int(size_in_bytes / 1073741824)
-    return str(size_in_gb) + " GB"
+    try:
+        size_in_bytes: int = vm.summary.storage.committed
+        size_in_gb: int = int(size_in_bytes / 1073741824)
+        return str(size_in_gb) + " GB"
+    except AttributeError:
+        return '0 GB'
 
 
 # get number of disks
 def get_num_disks(vm: vim.VirtualMachine) -> str:
-    return str(len(vm.layout.disk))
+    try:
+        return str(len(vm.layout.disk))
+    except AttributeError:
+        return "0"
 
 
 # get num of snapshots
 def get_num_snapshots(vm: vim.VirtualMachine) -> str:
-    return str(len(vm.layout.snapshot))
+    try:
+        return str(len(vm.layout.snapshot))
+    except AttributeError:
+        return "0"
 
 
 # get number of disk files

@@ -21,13 +21,12 @@ class PasteWin:
         self.paste_button.grid(row=3, column=0, columnspan=1, pady=10)
 
     def click_handle(self):
-        print("button clicked")
         # get VM name
         vm_name: str = self.vm_picker.get()
         # lookup VM Object
         vm_object: vim.VirtualMachine = self.dataset.vmdict.get(vm_name)
         # get text from box
-        raw_text: str= self.pasted_text.get(1.0, END)
+        raw_text: str = self.pasted_text.get(1.0, END)
         # translate text to usb_code
         trans_text: vim.UsbScanCodeSpec = str_to_usb(raw_text)
         # send codes to VM
