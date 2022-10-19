@@ -1,10 +1,11 @@
-'''
+"""
 Window to display critical VM stats for a selected VM
 CPU usage, RAM usage, Disk Usage, Frozen?, Power state?, Snapshots?, VMDK Files
-'''
+"""
 from .SnapshotWindow import SnapshotWindow
 from .FreezeWindow import FreezeWindow
 from .FuncLib import *
+
 
 class VmStatusWindow:
     def __init__(self, dataset: DataTree):
@@ -48,7 +49,6 @@ class VmStatusWindow:
         self.snapshot_button = Button(master=self.top_level, text="Create Snapshot", command=lambda: snapshot_handler())
         self.linked_clone_button = Button(master=self.top_level, text="Linked Clone")
         self.instant_clone_button = Button(master=self.top_level, text="Instant Clone")
-        self.paste_into_vm_button = Button(master=self.top_level, text="Paste Into VM")
         self.freeze_button = Button(master=self.top_level, text="Freeze", command=lambda: freeze_handler())
 
         # define scrollbar properties
@@ -84,8 +84,7 @@ class VmStatusWindow:
         self.snapshot_button.grid(column=3, row=3, padx=10, pady=10)
         self.linked_clone_button.grid(column=3, row=4, padx=10, pady=10)
         self.instant_clone_button.grid(column=3, row=5, padx=10, pady=10)
-        self.paste_into_vm_button.grid(column=3, row=6, padx=10, pady=10)
-        self.freeze_button.grid(column=3, row=7, padx=10, pady=10)
+        self.freeze_button.grid(column=3, row=6, padx=10, pady=10)
 
         # event handler
         def list_handle(event) -> None:
@@ -124,14 +123,17 @@ class VmStatusWindow:
         # button handling
         def power_on_handler() -> None:
             power_on_vm(vmobj=self.vm_object)
+            showinfo(title="Info", message="Power On Sent")
             return
 
         def power_off_handler() -> None:
             poweroff_vm(vmobj=self.vm_object)
+            showinfo(title="Info", message="Power Off Sent")
             return
 
         def promote_handler() -> None:
             promote_clone(self.vm_object)
+            showinfo(title="Info", message="Promote task sent")
             return
 
         def snapshot_handler() -> None:

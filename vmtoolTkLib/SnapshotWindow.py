@@ -38,6 +38,7 @@ class SnapshotWindow:
                     snapshot_memory=self.memory_var.get(), snapshot_quiesce=self.quiesce_var.get(),
                     vm=self.virtual_machine)
                 self.top.destroy()
+                showinfo(title="Info", message="Snapshot Created")
             else:
                 showwarning(title="Error", message="Please enter a snapshot name.")
             return

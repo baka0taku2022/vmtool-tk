@@ -15,7 +15,6 @@ from tkinter.messagebox import *
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim
 
-
 from .DataTree import DataTree
 from .StatWindow import StatWindow
 
@@ -276,7 +275,6 @@ def is_powered_on(vm: vim.VirtualMachine) -> bool:
         return False
 
 
-
 # Is VM frozen?
 def is_frozen(vm: vim.VirtualMachine) -> bool:
     try:
@@ -498,12 +496,12 @@ def key_combo(normal_key: str, left_alt: bool, left_shift: bool, left_ctrl: bool
     return spec
 
 
-def str_to_usb(input: str) -> vim.UsbScanCodeSpec:
+def str_to_usb(input_string: str) -> vim.UsbScanCodeSpec:
     # clear out newlines
-    input = input.replace("\n", '')
+    # input_string = input_string.replace("\n", '')
     spec: vim.UsbScanCodeSpec = vim.UsbScanCodeSpec()
     key_events = list()
-    for key in input:
+    for key in input_string:
         regex = r"[A-Z\~\!\@\#\$\%\^\&\*\(\)\_\+\{\}\|\:\"\<\>\?]"
         if re.match(regex, key):
             evt = vim.UsbScanCodeSpec.KeyEvent()
@@ -586,9 +584,9 @@ def get_num_disk_files(vm: vim.VirtualMachine) -> str:
 def create_snapshot(snapshot_name: str, vm: vim.VirtualMachine, snapshot_desc: str, snapshot_memory: bool,
                     snapshot_quiesce: bool):
     task = vm.CreateSnapshot_Task(name=snapshot_name,
-                              description=snapshot_desc,
-                              memory=snapshot_memory,
-                              quiesce=snapshot_quiesce)
+                                  description=snapshot_desc,
+                                  memory=snapshot_memory,
+                                  quiesce=snapshot_quiesce)
     if task.info.error is not None:
         showerror(title="Error", message=task.info.error.msg)
         return False

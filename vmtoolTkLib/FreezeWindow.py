@@ -10,9 +10,9 @@ class FreezeWindow:
 
         # define freeze scripts
         self.freeze_scripts: dict = {
-            "Windows Restart Script": '"c:\\Program Files\\VMware\\VMware Tools\\rpctool.exe" "instantclone.freeze" && shutdown /r /t 001',
-            "Windows Powershell Script": 'cd "c:\\Program Files\\VMware\\VMware Tools"; .\\rpctool.exe "instantclone.freeze"; ping 127.0.0.1; Enable-NetAdapter ethernet0; shutdown /l',
-            "Linux/FreeBSD restart": 'vmware-rpctool "instantclone.freeze" && init 6'
+            "Windows Restart Script": '"c:\\Program Files\\VMware\\VMware Tools\\rpctool.exe" "instantclone.freeze" && shutdown /r /t 001\n',
+            "Windows Powershell Script": 'cd "c:\\Program Files\\VMware\\VMware Tools"; .\\rpctool.exe "instantclone.freeze"; ping 127.0.0.1; Enable-NetAdapter ethernet0; shutdown /l\n',
+            "Linux/FreeBSD restart": 'vmware-rpctool "instantclone.freeze" && init 6\n'
         }
         # define widgets
         self.top = Toplevel(master=self.dataset.rootwin)
@@ -29,5 +29,5 @@ class FreezeWindow:
         def freeze_button_handler() -> None:
             script_type: str = self.freeze_combo.get()
             script_text: str = self.freeze_scripts.get(script_type)
-            usb_codes: vim.UsbScanCodeSpec = str_to_usb(input=script_text)
+            usb_codes: vim.UsbScanCodeSpec = str_to_usb(input_string=script_text)
             self.vm_object.PutUsbScanCodes(usb_codes)
