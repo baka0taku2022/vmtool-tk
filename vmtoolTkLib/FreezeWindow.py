@@ -21,7 +21,7 @@ class FreezeWindow:
         linux_freebsd = ScriptObj()
 
         win_restart.name = "Windows Restart"
-        win_restart.path = '"C:\\Program Files\\VMware\\VMware Tools\\rpctool.exe"'
+        win_restart.path = 'C:\\Program Files\\VMware\\VMware Tools\\rpctool.exe'
         win_restart.args = '"instantclone.freeze" && shutdown /r /t 001'
 
         self.freeze_scripts = {win_restart.name: win_restart}
@@ -51,11 +51,11 @@ class FreezeWindow:
             script_user: str = self.freeze_user.get()
             script_password: str = self.freeze_password.get()
             creds = vim.vm.guest.NamePasswordAuthentication(username=script_user, password=script_password)
-            process_manager = self.dataset.content.guestOperationsManager.processManager
+            process_manager = self.dataset.content.guestOperationsManager
             program_spec: vim.vm.guest.ProcessManager.ProgramSpec = vim.vm.guest.ProcessManager.ProgramSpec()
             program_spec.programPath: str = script_obj.path
             program_spec.arguments: str = script_obj.args
-            result_code = process_manager.StartProgramInGuest(vm=self.vm_object, auth=creds, spec=program_spec)
+            result_code = process_manager.processManager.StartProgramInGuest(vm=self.vm_object, auth=creds, spec=program_spec)
             if result_code > 0:
                 showinfo(title="Info", message="Freeze Submitted")
             return
