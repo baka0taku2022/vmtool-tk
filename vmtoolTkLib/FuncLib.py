@@ -578,8 +578,9 @@ def get_num_disk_files(vm: vim.VirtualMachine) -> str:
     try:
         return str(len(vm.layout.disk[0].diskFile))
     except IndexError:
-        return str(0)
-
+        return "0"
+    except AttributeError:
+        return "0"
 
 def create_snapshot(snapshot_name: str, vm: vim.VirtualMachine, snapshot_desc: str, snapshot_memory: bool,
                     snapshot_quiesce: bool):
