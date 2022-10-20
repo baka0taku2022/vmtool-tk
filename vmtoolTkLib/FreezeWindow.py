@@ -1,6 +1,8 @@
+import urllib3.exceptions
+
 from .FuncLib import *
 from tkinter.ttk import Combobox
-
+import requests
 
 # define class
 class FreezeWindow:
@@ -8,27 +10,15 @@ class FreezeWindow:
         self.dataset = data
         self.vm_object = vm
 
-        # define script object
-        class ScriptObj:
-            def __init__(self):
-                self.name: str = ""
-                self.path: str = ""
-                self.args: str = ""
+        # define script dictionary
+        self.script_dictionary = {
+            "Windows Restart Script": "windows_restart.bat"
+        }
 
-        # define objects
-        win_restart = ScriptObj()
-        win_pwsh = ScriptObj()
-        linux_freebsd = ScriptObj()
-
-        win_restart.name = "Windows Restart"
-        win_restart.path = 'C:\\Program Files\\VMware\\VMware Tools\\rpctool.exe'
-        win_restart.args = '"instantclone.freeze" && shutdown /r /t 001'
-
-        self.freeze_scripts = {win_restart.name: win_restart}
         # define widgets
         self.top = Toplevel(master=self.dataset.rootwin)
         self.freeze_label = Label(master=self.top, text="Freeze Script: ")
-        self.freeze_combo = Combobox(master=self.top, values=list(self.freeze_scripts.keys()))
+        self.freeze_combo = Combobox(master=self.top, values=list(self.script_dictionary.keys()))
         self.freeze_user_label = Label(master=self.top, text="Username: ")
         self.freeze_user = Entry(master=self.top, width=25)
         self.freeze_password_label = Label(master=self.top, text="Password: ")
@@ -46,16 +36,43 @@ class FreezeWindow:
 
         # handlers
         def freeze_button_handler() -> None:
-            script_name: str = self.freeze_combo.get()
-            script_obj: ScriptObj = self.freeze_scripts.get(script_name)
+            script_file_name: str = self.freeze_combo.get()
+            script_file_path: str = self.script_dictionary.get(script_file_name)
+            with open(script_file_path,"rb") as freeze_file:
+                data_blob = freeze_file.read()
             script_user: str = self.freeze_user.get()
             script_password: str = self.freeze_password.get()
-            creds = vim.vm.guest.NamePasswordAuthentication(username=script_user, password=script_password)
-            process_manager = self.dataset.content.guestOperationsManager
-            program_spec: vim.vm.guest.ProcessManager.ProgramSpec = vim.vm.guest.ProcessManager.ProgramSpec()
-            program_spec.programPath: str = script_obj.path
-            program_spec.arguments: str = script_obj.args
-            result_code = process_manager.processManager.StartProgramInGuest(vm=self.vm_object, auth=creds, spec=program_spec)
-            if result_code > 0:
-                showinfo(title="Info", message="Freeze Submitted")
-            return
+            creds: vim.vm.guest.NamePasswordAuthentication = vim.vm.guest.NamePasswordAuthentication(
+                username=script_user, password=script_password)
+            # create File Attributes object
+            file_attr_obj: vim.vm.guest.FileManager.FileAttributes = vim.vm.guest.FileManager.FileAttributes()
+            # get file manager object
+            file_manager: vim.vm.guest.FileManager = self.dataset.content.guestOperationsManager.fileManager
+            # create temp directory on VM
+            remote_dir = file_manager.CreateTemporaryDirectoryInGuest(vm=self.vm_object,
+                                                                      auth=creds, prefix='', suffix='')
+            # make file path in guest
+            remote_path = remote_dir + '\\' + script_file_path
+            # get file size
+            file_size = len(data_blob)
+            # initiate file transfer
+            put_url = file_manager.InitiateFileTransferToGuest(vm=self.vm_object, auth=creds, guestFilePath=remote_path,
+                                                     fileAttributes=file_attr_obj, fileSize=file_size, overwrite=True)
+            # push file to vm
+            response = requests.put(url=put_url, data=data_blob, verify=False)
+            if not response.status_code == 200:
+                showerror(title="Error", message="File Transfer Failed.")
+
+            # get process manager singleton
+            process_manager = self.dataset.content.guestOperationsManager.processManager
+
+            # define spec for program
+            program_spec = vim.vm.guest.ProcessManager.ProgramSpec(programPath=remote_path)
+
+            # execute freeze script
+            ret = process_manager.StartProgramInGuest(vm=self.vm_object, auth=creds, spec=program_spec)
+            if ret > 0:
+                self.top.destroy()
+                showinfo(title="Info", message="Freeze script started")
+            print()
+
