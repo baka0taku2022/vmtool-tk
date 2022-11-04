@@ -50,6 +50,7 @@ class VmStatusWindow:
         self.linked_clone_button = Button(master=self.top_level, text="Linked Clone")
         self.instant_clone_button = Button(master=self.top_level, text="Instant Clone")
         self.freeze_button = Button(master=self.top_level, text="Freeze", command=lambda: freeze_handler())
+        self.boot_bios_button = Button(master=self.top_level, text="BIOS Boot", command= lambda: bios_boot_handler())
 
         # define scrollbar properties
         self.vm_list.config(yscrollcommand=self.vm_scroll.set)
@@ -85,6 +86,7 @@ class VmStatusWindow:
         self.linked_clone_button.grid(column=3, row=4, padx=10, pady=10)
         self.instant_clone_button.grid(column=3, row=5, padx=10, pady=10)
         self.freeze_button.grid(column=3, row=6, padx=10, pady=10)
+        self.boot_bios_button.grid(column=3, row=7, padx=10, pady=10)
 
         # event handler
         def list_handle(event) -> None:
@@ -142,4 +144,8 @@ class VmStatusWindow:
 
         def freeze_handler() -> None:
             FreezeWindow(data=self.data, vm=self.vm_object)
+            return
+
+        def bios_boot_handler() -> None:
+            bios_boot(vm=self.vm_object)
             return

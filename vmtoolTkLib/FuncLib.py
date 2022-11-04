@@ -593,3 +593,11 @@ def create_snapshot(snapshot_name: str, vm: vim.VirtualMachine, snapshot_desc: s
         return False
     else:
         return True
+def bios_boot(vm: vim.VirtualMachine) -> None:
+    spec = vim.vm.ConfigSpec()
+    boot_spec = vim.vm.BootOptions()
+    boot_spec.enterBIOSSetup = True
+    spec.bootOptions = boot_spec
+    vm.ReconfigVM_Task(spec=spec)
+    vm.RebootGuest()
+    return

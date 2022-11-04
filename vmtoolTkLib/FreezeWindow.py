@@ -1,8 +1,10 @@
-import urllib3.exceptions
+from tkinter.ttk import Combobox
+
+import requests
+from pyVmomi import vmodl
 
 from .FuncLib import *
-from tkinter.ttk import Combobox
-import requests
+
 
 # define class
 class FreezeWindow:
@@ -10,9 +12,30 @@ class FreezeWindow:
         self.dataset = data
         self.vm_object = vm
 
+        # define script object
+        class FreezeScript:
+            def __init__(self):
+                self.script_file_name = ''
+                self.script_content = r''
+
+        # instantiate script objects
+        windows_reboot_script = FreezeScript()
+        windows_fast_script = FreezeScript()
+        linbsd_reboot_script = FreezeScript()
+
+        # define scripts
+        windows_reboot_script.script_file_name = "freeze.bat"
+        windows_reboot_script.script_content = r'"C:\Program Files\VMware\VMware Tools\rpctool.exe" "instantclone.freeze" && shutdown /r /t 001'
+        windows_fast_script.script_file_name = 'fast-freeze.ps1'
+        windows_fast_script.script_content = r'cd "C:\Program Files\VMware\VMware Tools"; .\rpctool.exe "instantclone.freeze"; ping 127.0.0.1; Get-NetAdapter | Enable-NetAdapter; shutdown /l > output'
+        linbsd_reboot_script.script_file_name = 'freeze.sh'
+        linbsd_reboot_script.script_content = r'vmware-rpctool "instantclone.freeze" && init 6'
+
         # define script dictionary
         self.script_dictionary = {
-            "Windows Restart Script": "windows_restart.bat"
+            "Windows Restart Script": windows_reboot_script,
+            "Windows Fast Script": windows_fast_script,
+            "Linux/BSD Restart Script": linbsd_reboot_script
         }
 
         # define widgets
@@ -37,9 +60,7 @@ class FreezeWindow:
         # handlers
         def freeze_button_handler() -> None:
             script_file_name: str = self.freeze_combo.get()
-            script_file_path: str = self.script_dictionary.get(script_file_name)
-            with open(script_file_path,"rb") as freeze_file:
-                data_blob = freeze_file.read()
+            script_file_obj: FreezeScript = self.script_dictionary.get(script_file_name)
             script_user: str = self.freeze_user.get()
             script_password: str = self.freeze_password.get()
             creds: vim.vm.guest.NamePasswordAuthentication = vim.vm.guest.NamePasswordAuthentication(
@@ -52,14 +73,15 @@ class FreezeWindow:
             remote_dir = file_manager.CreateTemporaryDirectoryInGuest(vm=self.vm_object,
                                                                       auth=creds, prefix='', suffix='')
             # make file path in guest
-            remote_path = remote_dir + '\\' + script_file_path
+            remote_path = remote_dir + '\\' + script_file_obj.script_file_name
             # get file size
-            file_size = len(data_blob)
+            file_size = len(script_file_obj.script_content)
             # initiate file transfer
             put_url = file_manager.InitiateFileTransferToGuest(vm=self.vm_object, auth=creds, guestFilePath=remote_path,
-                                                     fileAttributes=file_attr_obj, fileSize=file_size, overwrite=True)
+                                                               fileAttributes=file_attr_obj, fileSize=file_size,
+                                                               overwrite=True)
             # push file to vm
-            response = requests.put(url=put_url, data=data_blob, verify=False)
+            response = requests.put(url=put_url, data=script_file_obj.script_content, verify=False)
             if not response.status_code == 200:
                 showerror(title="Error", message="File Transfer Failed.")
 
@@ -70,9 +92,12 @@ class FreezeWindow:
             program_spec = vim.vm.guest.ProcessManager.ProgramSpec(programPath=remote_path)
 
             # execute freeze script
-            ret = process_manager.StartProgramInGuest(vm=self.vm_object, auth=creds, spec=program_spec)
+            try:
+                ret = process_manager.StartProgramInGuest(vm=self.vm_object, auth=creds, spec=program_spec)
+            except vmodl.fault.SystemError:
+                showerror(title="Error", message="Unknown system error in guest.")
+                return
             if ret > 0:
                 self.top.destroy()
                 showinfo(title="Info", message="Freeze script started")
-            print()
-
+                return

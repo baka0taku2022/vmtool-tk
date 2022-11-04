@@ -1,1 +1,2 @@
-pyvmomi
+pyvmomi~=7.0.3
+requests~=2.27.1

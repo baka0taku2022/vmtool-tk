@@ -6,8 +6,7 @@
 
     -=baka0taku=-
 """
-import threading
-
+from pyVmomi import vmodl
 from .FuncLib import *
 
 
@@ -81,41 +80,41 @@ class StatWindow:
             self.dataset.dvswitchdict[dvs.name] = dvs
 
         # build VM dict
-        def vmdict_builder(vmobjlst: list, new_dict: dict):
-            for vm in vmobjlst:
-                try:
-                    new_dict[vm.name] = vm
-                except pyVmomi.vmodl.fault.ManagedObjectNotFound:
-                    pass
+        self.tvar.set("Building Dictionary for VMs...")
+        self.statlab.update()
+        obj_specs:list = list()
+        for vm in self.dataset.vmobjlist.view:
+            obj_spec = vmodl.query.PropertyCollector.ObjectSpec(obj=vm)
+            obj_specs.append(obj_spec)
+        filter_spec = vmodl.query.PropertyCollector.FilterSpec()
+        filter_spec.objectSet = obj_specs
+        prop_set = vmodl.query.PropertyCollector.PropertySpec(all=False)
+        prop_set.type = vim.VirtualMachine
+        prop_set.pathSet = ['name']
+        filter_spec.propSet = [prop_set]
+        prop_collector = self.dataset.content.propertyCollector
+        options = vmodl.query.PropertyCollector.RetrieveOptions()
+        result = prop_collector.RetrievePropertiesEx([filter_spec], options)
+        for obj in result.objects:
+            self.dataset.vmdict[obj.propSet[0].val] = obj.obj
 
         # build net dict
-        def netdict_builder(net_obj_lst: list, new_dvpg_dict: dict, new_net_dict: dict):
-            for net in net_obj_lst:
-                if type(net) is vim.dvs.DistributedVirtualPortgroup:
-                    try:
-                        new_dvpg_dict[net.name] = net
-                    except pyVmomi.vmodl.fault.ManagedObjectNotFound:
-                        pass
-                else:
-                    try:
-                        new_net_dict[net.name] = net
-                    except pyVmomi.vmodl.fault.ManagedObjectNotFound:
-                        pass
-
-        # define threads
-        t1 = threading.Thread(target=vmdict_builder, args=(self.dataset.vmobjlist.view, self.dataset.vmdict))
-        t2 = threading.Thread(target=netdict_builder, args=(self.dataset.networkobjlist.view,
-                                                            self.dataset.dvportgroupdict, self.dataset.networkdict))
-
-        self.tvar.set("Building Dictionaries for Portgroups and VMs...")
+        self.tvar.set("Building Dictionary for Portgroups...")
         self.statlab.update()
-
-        # start threads
-        t1.start()
-        t2.start()
-
-        # wait for threads to finish
-        t1.join()
-        t2.join()
+        net_specs = list()
+        for net in self.dataset.networkobjlist.view:
+            net_spec = vmodl.query.PropertyCollector.ObjectSpec(obj=net)
+            net_specs.append(net_spec)
+        filter_spec = vmodl.query.PropertyCollector.FilterSpec()
+        filter_spec.objectSet = net_specs
+        prop_set = vmodl.query.PropertyCollector.PropertySpec(all=False)
+        prop_set.pathSet = ['name']
+        prop_set.type = vim.Network
+        filter_spec.propSet = [prop_set]
+        prop_collector = self.dataset.content.propertyCollector
+        options = vmodl.query.PropertyCollector.RetrieveOptions()
+        result = prop_collector.RetrievePropertiesEx([filter_spec], options)
+        for obj in result.objects:
+            self.dataset.dvportgroupdict[obj.propSet[0].val] = obj.obj
 
         return
