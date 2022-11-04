@@ -47,8 +47,10 @@ class VmStatusWindow:
         self.power_off_button = Button(master=self.top_level, text="Power Off", command=lambda: power_off_handler())
         self.promote_button = Button(master=self.top_level, text="Promote", command=lambda: promote_handler())
         self.snapshot_button = Button(master=self.top_level, text="Create Snapshot", command=lambda: snapshot_handler())
-        self.linked_clone_button = Button(master=self.top_level, text="Linked Clone")
-        self.instant_clone_button = Button(master=self.top_level, text="Instant Clone")
+        self.linked_clone_button = Button(master=self.top_level, text="Linked Clone",
+                                          command=lambda: linked_clone_handler())
+        self.instant_clone_button = Button(master=self.top_level, text="Instant Clone",
+                                           command=lambda: instant_clone_handler())
         self.freeze_button = Button(master=self.top_level, text="Freeze", command=lambda: freeze_handler())
         self.boot_bios_button = Button(master=self.top_level, text="BIOS Boot", command= lambda: bios_boot_handler())
 
@@ -149,3 +151,9 @@ class VmStatusWindow:
         def bios_boot_handler() -> None:
             bios_boot(vm=self.vm_object)
             return
+
+        def linked_clone_handler() -> None:
+            make_linked_clone(vmobj=self.vm_object)
+
+        def instant_clone_handler() -> None:
+            make_instant_clone(vmobj=self.vm_object)
