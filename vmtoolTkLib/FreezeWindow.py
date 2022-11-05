@@ -97,6 +97,8 @@ class FreezeWindow:
             except vmodl.fault.SystemError:
                 showerror(title="Error", message="Unknown system error in guest.")
                 return
+            except vim.fault.GuestPermissionDenied:
+                showerror(title='Error', message='The guest authentication being used does not have sufficient permissions to perform the operation.')
             if ret > 0:
                 self.top.destroy()
                 showinfo(title="Info", message="Freeze script started")

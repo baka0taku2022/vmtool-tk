@@ -17,6 +17,8 @@ class CloneWin:
         self.vmframe = Frame(master=self.win)
         self.vmbox = Listbox(master=self.vmframe, width=50, height=15, selectmode=MULTIPLE)
         self.vmscroll = Scrollbar(master=self.vmframe, orient=VERTICAL)
+        self.search_box = Entry(master=self.win)
+        self.search_box.bind(sequence='<KeyRelease>', func=self.scankey)
 
         # configure scrollbar for vmbox
         self.vmbox.config(yscrollcommand=self.vmscroll.set)
@@ -59,13 +61,14 @@ class CloneWin:
         self.num_of_clones.pack(side=RIGHT)
 
         # place widgets for vm list
+        self.search_box.grid(row=1, column=0, padx=20, pady=5)
         self.vmlabel.grid(row=0, column=0, padx=20, pady=5)
-        self.vmframe.grid(row=1, column=0, padx=20, pady=20, rowspan=3)
+        self.vmframe.grid(row=2, column=0, padx=20, pady=20, rowspan=3)
         self.vmbox.pack(side=LEFT, fill=BOTH)
         self.vmscroll.pack(side=RIGHT, fill=BOTH)
 
         # place widgets for clone list
-        self.linkframe.grid(row=1, column=3, padx=20, pady=20, rowspan=3)
+        self.linkframe.grid(row=2, column=3, padx=20, pady=20, rowspan=3)
         self.linklabel.grid(row=0, column=3, padx=20, pady=5)
         self.clonebox.pack(side=LEFT, fill=BOTH)
         self.linkscroll.pack(side=RIGHT, fill=BOTH)
@@ -85,3 +88,27 @@ class CloneWin:
                                  data=self.dataset)
             self.win.destroy()
         return
+
+    def update_list(self, data):
+        self.vmbox.delete(0, 'end')
+
+        # put new data
+        for item in data:
+            self.vmbox.insert('end', item)
+        return
+
+    def scankey(self, event):
+        val = event.widget.get()
+
+        if val == '':
+            data = self.dataset.vmdict.keys()
+        else:
+            data = list()
+            for item in self.dataset.vmdict.keys():
+                if val.lower() in item.lower():
+                    data.append(item)
+        self.update_list(data)
+
+
+
+

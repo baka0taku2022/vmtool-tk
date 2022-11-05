@@ -11,6 +11,7 @@ class PromoteDisk:
     def __init__(self, data: DataTree, window_type: str) -> None:
         # define class variables
         self.dataset = data
+        self.win_type = window_type
 
         # define widgets
         self.win = Toplevel(master=self.dataset.rootwin)
@@ -40,9 +41,13 @@ class PromoteDisk:
                                                                 dest_list=None, dataset=self.dataset, list_type='pg'))
             self.executebutton = Button(master=self.win, text='Send clone task to server.',
                                         command=lambda: self.exe_handle(window_type=window_type))
+
+        self.search_box = Entry(master=self.vmframe)
+        self.search_box.bind(sequence='<KeyRelease>', func=self.search)
         # place widgets
         self.vmlabel.grid(row=0, column=0, padx=20, pady=5)
         self.vmframe.grid(row=1, column=0, padx=20, pady=20, rowspan=2)
+        self.search_box.pack(side=TOP)
         self.vmbox.pack(side=LEFT, fill=BOTH)
         self.vmscroll.pack(side=RIGHT, fill=BOTH)
         self.refresh.grid(row=4, column=0, padx=20, pady=20)
@@ -67,3 +72,31 @@ class PromoteDisk:
             else:
                 showinfo(title="Error", message="Something went wrong. Please check vcenter log for cause of failure.")
             return
+    def search(self,event):
+        val = event.widget.get()
+        if self.win_type == "promote":
+            if val == '':
+                data = self.dataset.vmdict.keys()
+            else:
+                data = list()
+                for item in self.dataset.vmdict.keys():
+                    if val.lower() in item.lower():
+                        data.append(item)
+        elif self.win_type == "dvclone":
+            if val == '':
+                data = self.dataset.dvportgroupdict.keys()
+            else:
+                data = list()
+                for item in self.dataset.dvportgroupdict.keys():
+                    if val.lower() in item.lower():
+                        data.append(item)
+        self.update_list(data)
+        return
+
+    def update_list(self, data):
+        self.vmbox.delete(0, 'end')
+
+        # put new data
+        for item in data:
+            self.vmbox.insert('end', item)
+        return
