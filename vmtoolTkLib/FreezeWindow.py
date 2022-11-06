@@ -73,7 +73,12 @@ class FreezeWindow:
             remote_dir = file_manager.CreateTemporaryDirectoryInGuest(vm=self.vm_object,
                                                                       auth=creds, prefix='', suffix='')
             # make file path in guest
-            remote_path = remote_dir + '\\' + script_file_obj.script_file_name
+            vm_guest_id = self.vm_object.config.guestId
+            vm_regex = r"windows"
+            if re.match(vm_regex, vm_guest_id):
+                remote_path = remote_dir + '\\' + script_file_obj.script_file_name
+            else:
+                remote_path = remote_dir + '/' + script_file_obj.script_file_name
             # get file size
             file_size = len(script_file_obj.script_content)
             # initiate file transfer
@@ -88,8 +93,19 @@ class FreezeWindow:
             # get process manager singleton
             process_manager = self.dataset.content.guestOperationsManager.processManager
 
+            # set permissions for linux/bsd
+            if not re.match(vm_regex, vm_guest_id):
+                chmod_prog = "/bin/chmod"
+                chmod_opts = "777 " + remote_path
+                chmod_spec = vim.vm.guest.ProcessManager.ProgramSpec(programPath=chmod_prog, arguments=chmod_opts)
+                process_manager.StartProgramInGuest(vm=self.vm_object, auth=creds, spec=chmod_spec)
+
             # define spec for program
-            program_spec = vim.vm.guest.ProcessManager.ProgramSpec(programPath=remote_path)
+            if script_file_name == "Windows Fast Script":
+                program_spec = vim.vm.guest.ProcessManager.ProgramSpec(
+                    programPath=r"c:\windows\system32\WindowsPowerShell\v1.0\powershell.exe", arguments=remote_path)
+            else:
+                program_spec = vim.vm.guest.ProcessManager.ProgramSpec(programPath=remote_path)
 
             # execute freeze script
             try:
