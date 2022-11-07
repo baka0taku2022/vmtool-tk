@@ -624,3 +624,6 @@ def get_host_storage_usage(hostobj: vim.HostSystem) -> str:
         free_storage += ds.summary.freeSpace
     percentage_used = int((free_storage / total_storage) * 100)
     return str(percentage_used) + '% Free'
+
+def get_swapped_ram(vmobj: vim.VirtualMachine) -> str:
+    return str(vmobj.summary.quickStats.swappedMemory) + 'MB'

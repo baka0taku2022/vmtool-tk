@@ -20,6 +20,7 @@ class VmStatusWindow:
         self.frozenvar: StringVar = StringVar()
         self.powervar: StringVar = StringVar()
         self.snapvar: StringVar = StringVar()
+        self.swapped_memory_var: StringVar = StringVar()
 
         # define widgets
         self.top_level = Toplevel(master=self.data.rootwin)
@@ -44,6 +45,8 @@ class VmStatusWindow:
         self.num_snapshots = Label(master=self.top_level, relief=SUNKEN, textvariable=self.snapvar)
         self.num_disk_files_label = Label(master=self.top_level, text="Number of Disk Files/Disk")
         self.num_disk_files = Label(master=self.top_level, relief=SUNKEN, textvariable=self.diskfilevar)
+        self.swapped_memory_label = Label(master=self.top_level, text="Swapped Memory")
+        self.swapped_memory = Label(master=self.top_level, relief=SUNKEN, textvariable=self.swapped_memory_var)
         self.power_on_button = Button(master=self.top_level, text="Power On", command=lambda: self.power_on_handler())
         self.power_off_button = Button(master=self.top_level, text="Power Off", command=lambda: self.power_off_handler())
         self.promote_button = Button(master=self.top_level, text="Promote", command=lambda: self.promote_handler())
@@ -85,6 +88,8 @@ class VmStatusWindow:
         self.num_snapshots.grid(column=2, row=6, padx=10, pady=10)
         self.num_disk_files_label.grid(column=1, row=7, padx=10, pady=10)
         self.num_disk_files.grid(column=2, row=7, padx=10, pady=10)
+        self.swapped_memory_label.grid(column=1, row=8, padx=10, pady=10)
+        self.swapped_memory.grid(column=2, row=8, padx=10, pady=10)
         self.power_on_button.grid(column=3, row=0, padx=10, pady=10)
         self.power_off_button.grid(column=3, row=1, padx=10, pady=10)
         self.promote_button.grid(column=3, row=2, padx=10, pady=10)
@@ -122,6 +127,7 @@ class VmStatusWindow:
         self.disknumvar.set(get_num_disks(self.vm_object))
         self.snapvar.set(get_num_snapshots(self.vm_object))
         self.diskfilevar.set(get_num_disk_files(self.vm_object))
+        self.swapped_memory_var.set(get_swapped_ram(vmobj=self.vm_object))
 
         return
 

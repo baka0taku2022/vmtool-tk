@@ -125,6 +125,7 @@ class StatWindow:
         options = vmodl.query.PropertyCollector.RetrieveOptions()
         try:
             result = prop_collector.RetrievePropertiesEx([filter_spec], options)
+            results.clear()
             results.append(result)
             while result.token is not None:
                 result = prop_collector.ContinueRetrievePropertiesEx(result.token)
