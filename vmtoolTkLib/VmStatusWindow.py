@@ -105,7 +105,7 @@ class VmStatusWindow:
         else:
             selected_name: str = self.vm_list.get(selected_index)
         # get vm object from dictionary
-        self.vm_object = self.data.vmdict.get(selected_name)
+        self.vm_object: vim.VirtualMachine = self.data.vmdict.get(selected_name)
 
         # get data from object about VM
         self.cpuvar.set(get_cpu_usage(self.vm_object))

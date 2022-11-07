@@ -82,7 +82,7 @@ class StatWindow:
         # build VM dict
         self.tvar.set("Building Dictionary for VMs...")
         self.statlab.update()
-        obj_specs:list = list()
+        obj_specs: list = list()
         for vm in self.dataset.vmobjlist.view:
             obj_spec = vmodl.query.PropertyCollector.ObjectSpec(obj=vm)
             obj_specs.append(obj_spec)
@@ -94,9 +94,19 @@ class StatWindow:
         filter_spec.propSet = [prop_set]
         prop_collector = self.dataset.content.propertyCollector
         options = vmodl.query.PropertyCollector.RetrieveOptions()
-        result = prop_collector.RetrievePropertiesEx([filter_spec], options)
-        for obj in result.objects:
-            self.dataset.vmdict[obj.propSet[0].val] = obj.obj
+        results = list()
+        try:
+            result = prop_collector.RetrievePropertiesEx([filter_spec], options)
+            results.append(result)
+            while result.token is not None:
+                result = prop_collector.ContinueRetrievePropertiesEx(result.token)
+                results.append(result)
+            for result in results:
+                for obj in result.objects:
+                    self.dataset.vmdict[obj.propSet[0].val] = obj.obj
+        except vmodl.fault.ManagedObjectNotFound:
+            pass
+
 
         # build net dict
         self.tvar.set("Building Dictionary for Portgroups...")
@@ -113,8 +123,16 @@ class StatWindow:
         filter_spec.propSet = [prop_set]
         prop_collector = self.dataset.content.propertyCollector
         options = vmodl.query.PropertyCollector.RetrieveOptions()
-        result = prop_collector.RetrievePropertiesEx([filter_spec], options)
-        for obj in result.objects:
-            self.dataset.dvportgroupdict[obj.propSet[0].val] = obj.obj
+        try:
+            result = prop_collector.RetrievePropertiesEx([filter_spec], options)
+            results.append(result)
+            while result.token is not None:
+                result = prop_collector.ContinueRetrievePropertiesEx(result.token)
+                results.append(result)
+            for result in results:
+                for obj in result.objects:
+                    self.dataset.dvportgroupdict[obj.propSet[0].val] = obj.obj
+        except vmodl.fault.ManagedObjectNotFound:
+            pass
 
         return

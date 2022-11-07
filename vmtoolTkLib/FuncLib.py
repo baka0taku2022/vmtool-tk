@@ -601,3 +601,26 @@ def bios_boot(vm: vim.VirtualMachine) -> None:
     vm.ReconfigVM_Task(spec=spec)
     vm.RebootGuest()
     return
+
+def get_host_cpu_usage(hostobj: vim.HostSystem) -> str:
+    total_mhz = hostobj.summary.hardware.cpuMhz * hostobj.summary.hardware.numCpuCores * hostobj.summary.hardware.numCpuPkgs
+    used_mhz = hostobj.summary.quickStats.overallCpuUsage
+    percentage_used = int((used_mhz / total_mhz) * 100)
+    return str(percentage_used) + '%'
+
+
+def get_host_memory_usage(hostobj: vim.HostSystem) -> str:
+    total_memory = hostobj.summary.hardware.memorySize / 1024 / 1024
+    used_memory = hostobj.summary.quickStats.overallMemoryUsage
+    percentage_used = int((used_memory / total_memory) * 100)
+    return str(percentage_used) + '%'
+
+
+def get_host_storage_usage(hostobj: vim.HostSystem) -> str:
+    total_storage = 0
+    free_storage = 0
+    for ds in hostobj.datastore:
+        total_storage += ds.summary.capacity
+        free_storage += ds.summary.freeSpace
+    percentage_used = int((free_storage / total_storage) * 100)
+    return str(percentage_used) + '% Free'
