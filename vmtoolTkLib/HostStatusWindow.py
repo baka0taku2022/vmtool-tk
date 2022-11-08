@@ -1,10 +1,8 @@
 """
 This window is a set of status variables and tools for ESX1 Hosts.
 """
-from pyVmomi import vim
-from tkinter import *
-from .DataTree import DataTree
 from .FuncLib import *
+
 
 class HostStatusWindow:
     def __init__(self, data: DataTree):
@@ -39,7 +37,7 @@ class HostStatusWindow:
 
         # place widgets
         self.host_list_label.grid(column=0, row=0, padx=10, pady=10)
-        self.host_frame.grid(column=1, row=0,padx=10, pady=10, rowspan=5)
+        self.host_frame.grid(column=1, row=0, padx=10, pady=10, rowspan=5)
         self.host_list.pack(side=LEFT)
         self.host_scroll.pack(side=RIGHT, fill=BOTH)
         self.powered_on_label.grid(column=2, row=0, padx=10, pady=10)

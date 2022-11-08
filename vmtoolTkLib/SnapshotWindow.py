@@ -1,5 +1,6 @@
 from .FuncLib import *
 
+
 class SnapshotWindow:
     def __init__(self, data_set: DataTree, vm: vim.VirtualMachine) -> None:
         self.data = data_set

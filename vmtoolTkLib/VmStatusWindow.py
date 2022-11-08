@@ -4,10 +4,13 @@ CPU usage, RAM usage, Disk Usage, Frozen?, Power state?, Snapshots?, VMDK Files
 """
 from .SnapshotWindow import SnapshotWindow
 from .FreezeWindow import FreezeWindow
+from .VmTaskWindow import VmTaskWindow
 from .FuncLib import *
+
 
 class VmStatusWindow:
     def __init__(self, dataset: DataTree):
+        self.vm_object = None
         self.data: DataTree = dataset
         self.vm_object: vim.VirtualMachine
 
@@ -48,15 +51,25 @@ class VmStatusWindow:
         self.swapped_memory_label = Label(master=self.top_level, text="Swapped Memory")
         self.swapped_memory = Label(master=self.top_level, relief=SUNKEN, textvariable=self.swapped_memory_var)
         self.power_on_button = Button(master=self.top_level, text="Power On", command=lambda: self.power_on_handler())
-        self.power_off_button = Button(master=self.top_level, text="Power Off", command=lambda: self.power_off_handler())
+        self.power_off_button = Button(master=self.top_level, text="Power Off",
+                                       command=lambda: self.power_off_handler())
         self.promote_button = Button(master=self.top_level, text="Promote", command=lambda: self.promote_handler())
-        self.snapshot_button = Button(master=self.top_level, text="Create Snapshot", command=lambda: self.snapshot_handler())
+        self.snapshot_button = Button(master=self.top_level, text="Create Snapshot",
+                                      command=lambda: self.snapshot_handler())
         self.linked_clone_button = Button(master=self.top_level, text="Linked Clone",
                                           command=lambda: self.linked_clone_handler())
         self.instant_clone_button = Button(master=self.top_level, text="Instant Clone",
                                            command=lambda: self.instant_clone_handler())
         self.freeze_button = Button(master=self.top_level, text="Freeze", command=lambda: self.freeze_handler())
-        self.boot_bios_button = Button(master=self.top_level, text="BIOS Boot", command= lambda: self.bios_boot_handler())
+        self.boot_bios_button = Button(master=self.top_level, text="BIOS Boot",
+                                       command=lambda: self.bios_boot_handler())
+        self.reset_button = Button(master=self.top_level, text="Reset", command=lambda: self.reset_button_handler())
+        self.reboot_button = Button(self.top_level, text="Reboot Guest", command=lambda: self.reboot_button_handler)
+        self.shutdown_button = Button(self.top_level, text="Shutdown Guest",
+                                      command=lambda: self.shutdown_button_handler)
+        self.screen_resolution_button = Button(self.top_level, text="Screen Resolution",
+                                               command=lambda: self.screen_resolution_handler())
+        self.tasks_button = Button(master=self.top_level, text="Recent Tasks", command=lambda: self.tasks_handler())
         self.search_box = Entry(master=self.vm_frame, width=50)
         self.search_box.bind(sequence='<KeyRelease>', func=self.search_vms)
 
@@ -98,8 +111,13 @@ class VmStatusWindow:
         self.instant_clone_button.grid(column=3, row=5, padx=10, pady=10)
         self.freeze_button.grid(column=3, row=6, padx=10, pady=10)
         self.boot_bios_button.grid(column=3, row=7, padx=10, pady=10)
+        self.reset_button.grid(column=3, row=8, padx=10, pady=10)
+        self.reboot_button.grid(column=4, row=0, pady=10, padx=10)
+        self.shutdown_button.grid(column=4, row=1, padx=10, pady=10)
+        self.screen_resolution_button.grid(column=4, row=2, padx=10, pady=10)
+        self.tasks_button.grid(column=4, row=3, padx=10, pady=10)
 
-        # event handler
+    # event handler
     def list_handle(self, event) -> None:
         # get selected index
         selected_index: tuple = self.vm_list.curselection()
@@ -130,8 +148,6 @@ class VmStatusWindow:
         self.swapped_memory_var.set(get_swapped_ram(vmobj=self.vm_object))
 
         return
-
-
 
     # button handling
     def power_on_handler(self) -> None:
@@ -188,4 +204,24 @@ class VmStatusWindow:
                 if val.lower() in item.lower():
                     data.append(item)
         self.update_list(data)
+        return
+
+    def reset_button_handler(self):
+        reset_vm(vmobj=self.vm_object)
+        return
+
+    def reboot_button_handler(self):
+        reboot_vm_guest(vmobj=self.vm_object)
+        return
+
+    def shutdown_button_handler(self):
+        shutdown_vm(vmobj=self.vm_object)
+        return
+
+    def screen_resolution_handler(self):
+        set_screen_resolution(vmobj=self.vm_object, width=1280, height=960)
+        return
+
+    def tasks_handler(self) -> None:
+        VmTaskWindow(data=self.data, vmobj=self.vm_object)
         return

@@ -107,7 +107,6 @@ class StatWindow:
         except vmodl.fault.ManagedObjectNotFound:
             pass
 
-
         # build net dict
         self.tvar.set("Building Dictionary for Portgroups...")
         self.statlab.update()

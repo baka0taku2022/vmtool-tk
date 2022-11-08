@@ -60,15 +60,11 @@ class ConnectionWin:
         self.connwin.update()
         if make_connection(dataset=self.dataset, fqdn=self.serverentry.get(), user=self.userentry.get(),
                            passwd=self.passentry.get()):
-            self.loginbutton.configure(state=DISABLED)
-            self.serverentry.delete(0, "end")
-            self.userentry.delete(0, "end")
-            self.passentry.delete(0, "end")
+
             self.stat.set('Connected...')
             self.dataset.sw = StatWindow(data=self.dataset)
             if self.conntype == "vcenter":
                 MainMenu(data=self.dataset)
-            self.connwin.destroy()
 
         else:
             self.stat.set("Idle...")

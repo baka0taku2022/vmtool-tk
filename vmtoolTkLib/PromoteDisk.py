@@ -72,7 +72,9 @@ class PromoteDisk:
             else:
                 showinfo(title="Error", message="Something went wrong. Please check vcenter log for cause of failure.")
             return
-    def search(self,event):
+
+    def search(self, event):
+        data = None
         val = event.widget.get()
         if self.win_type == "promote":
             if val == '':

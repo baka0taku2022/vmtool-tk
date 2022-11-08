@@ -229,8 +229,16 @@ def clone_dvportgroup(pgobj: vim.dvs.DistributedVirtualPortgroup) -> bool:
         showerror(title="Error", message=tsk.info.error.msg)
         return False
     return True
-
-
+# reset VM
+def reset_vm(vmobj: vim.VirtualMachine) -> bool:
+    if not vmobj.ResetVM_Task():
+        return False
+    return True
+# reboot VM
+def reboot_vm_guest(vmobj: vim.VirtualMachine) ->bool:
+    if not vmobj.RebootGuest():
+        return False
+    return True
 # shutdown VM guest
 def shutdown_vm(vmobj: vim.VirtualMachine) -> bool:
     if not vmobj.ShutdownGuest():
@@ -593,6 +601,7 @@ def create_snapshot(snapshot_name: str, vm: vim.VirtualMachine, snapshot_desc: s
         return False
     else:
         return True
+
 def bios_boot(vm: vim.VirtualMachine) -> None:
     spec = vim.vm.ConfigSpec()
     boot_spec = vim.vm.BootOptions()
@@ -601,6 +610,7 @@ def bios_boot(vm: vim.VirtualMachine) -> None:
     vm.ReconfigVM_Task(spec=spec)
     vm.RebootGuest()
     return
+
 
 def get_host_cpu_usage(hostobj: vim.HostSystem) -> str:
     total_mhz = hostobj.summary.hardware.cpuMhz * hostobj.summary.hardware.numCpuCores * hostobj.summary.hardware.numCpuPkgs
@@ -625,5 +635,13 @@ def get_host_storage_usage(hostobj: vim.HostSystem) -> str:
     percentage_used = int((free_storage / total_storage) * 100)
     return str(percentage_used) + '% Free'
 
+
 def get_swapped_ram(vmobj: vim.VirtualMachine) -> str:
-    return str(vmobj.summary.quickStats.swappedMemory) + 'MB'
+    if vmobj is not None:
+        return str(vmobj.summary.quickStats.swappedMemory) + 'MB'
+    else:
+        return "0MB"
+
+def set_screen_resolution(vmobj: vim.VirtualMachine, width:int, height:int) ->None:
+    vmobj.SetScreenResolution(width=width, height=height)
+    return

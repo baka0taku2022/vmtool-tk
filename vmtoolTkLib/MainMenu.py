@@ -18,7 +18,6 @@ class MainMenu:
 
         # define new window
         self.mainMenu = Toplevel(master=self.dataset.rootwin)
-        self.mainMenu.protocol("WM_DELETE_WINDOW", lambda: cleanup(dataset=self.dataset, rootwin=self.dataset.rootwin))
         # define widgets
         self.menuFrame = LabelFrame(master=self.mainMenu, padx=10, pady=10, text="Main Menu")
         # define vars

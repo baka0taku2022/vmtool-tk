@@ -108,7 +108,3 @@ class CloneWin:
                 if val.lower() in item.lower():
                     data.append(item)
         self.update_list(data)
-
-
-
-

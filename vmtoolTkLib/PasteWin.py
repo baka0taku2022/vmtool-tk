@@ -12,7 +12,8 @@ class PasteWin:
         self.vm_picker_label: Label = Label(master=self.top_window, text='Select a VM to paste into:')
         self.vm_picker: Combobox = Combobox(master=self.top_window, values=sorted(list(self.dataset.vmdict.keys())))
         self.pasted_text: Text = Text(master=self.top_window, width=80, height=24)
-        self.paste_button: Button = Button(master=self.top_window, text='Paste to VM', command=lambda: self.click_handle())
+        self.paste_button: Button = Button(master=self.top_window, text='Paste to VM',
+                                           command=lambda: self.click_handle())
 
         # place widgets
         self.vm_picker_label.grid(row=0, column=0)

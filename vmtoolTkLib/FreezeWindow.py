@@ -70,11 +70,15 @@ class FreezeWindow:
             # get file manager object
             file_manager: vim.vm.guest.FileManager = self.dataset.content.guestOperationsManager.fileManager
             # create temp directory on VM
-            remote_dir = file_manager.CreateTemporaryDirectoryInGuest(vm=self.vm_object,
+            try:
+                remote_dir = file_manager.CreateTemporaryDirectoryInGuest(vm=self.vm_object,
                                                                       auth=creds, prefix='', suffix='')
+            except vim.fault.InvalidGuestLogin:
+                showerror(title="Error", message="Invalid Login")
+                return
             # make file path in guest
             vm_guest_id = self.vm_object.config.guestId
-            vm_regex = r"windows"
+            vm_regex = r"win"
             if re.match(vm_regex, vm_guest_id):
                 remote_path = remote_dir + '\\' + script_file_obj.script_file_name
             else:
@@ -115,6 +119,7 @@ class FreezeWindow:
                 return
             except vim.fault.GuestPermissionDenied:
                 showerror(title='Error', message='The guest authentication being used does not have sufficient permissions to perform the operation.')
+                return
             if ret > 0:
                 self.top.destroy()
                 showinfo(title="Info", message="Freeze script started")
