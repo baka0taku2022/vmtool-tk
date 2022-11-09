@@ -642,6 +642,14 @@ def get_swapped_ram(vmobj: vim.VirtualMachine) -> str:
     else:
         return "0MB"
 
+
 def set_screen_resolution(vmobj: vim.VirtualMachine, width:int, height:int) ->None:
     vmobj.SetScreenResolution(width=width, height=height)
+    return
+
+
+def rename_obj(obj: vim.ManagedEntity, new_name: str, data: DataTree) -> None:
+    obj.Rename_Task(newName=new_name)
+    data.clear_data()
+    StatWindow(data=data).parse_data()
     return

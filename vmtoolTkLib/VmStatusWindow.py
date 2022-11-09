@@ -5,6 +5,7 @@ CPU usage, RAM usage, Disk Usage, Frozen?, Power state?, Snapshots?, VMDK Files
 from .SnapshotWindow import SnapshotWindow
 from .FreezeWindow import FreezeWindow
 from .VmTaskWindow import VmTaskWindow
+from .RenameWindow import RenameWindow
 from .FuncLib import *
 
 
@@ -70,6 +71,7 @@ class VmStatusWindow:
         self.screen_resolution_button = Button(self.top_level, text="Screen Resolution",
                                                command=lambda: self.screen_resolution_handler())
         self.tasks_button = Button(master=self.top_level, text="Recent Tasks", command=lambda: self.tasks_handler())
+        self.rename_button = Button(master=self.top_level, text="Rename", command=lambda: self.rename_handler())
         self.search_box = Entry(master=self.vm_frame, width=50)
         self.search_box.bind(sequence='<KeyRelease>', func=self.search_vms)
 
@@ -116,6 +118,7 @@ class VmStatusWindow:
         self.shutdown_button.grid(column=4, row=1, padx=10, pady=10)
         self.screen_resolution_button.grid(column=4, row=2, padx=10, pady=10)
         self.tasks_button.grid(column=4, row=3, padx=10, pady=10)
+        self.rename_button.grid(column=4, row=4, padx=10, pady=10)
 
     # event handler
     def list_handle(self, event) -> None:
@@ -203,7 +206,7 @@ class VmStatusWindow:
             for item in self.data.vmdict.keys():
                 if val.lower() in item.lower():
                     data.append(item)
-        self.update_list(data)
+        self.update_list(sorted(data))
         return
 
     def reset_button_handler(self):
@@ -224,4 +227,12 @@ class VmStatusWindow:
 
     def tasks_handler(self) -> None:
         VmTaskWindow(data=self.data, vmobj=self.vm_object)
+        return
+
+    def rename_handler(self):
+        RenameWindow(vmobj=self.vm_object, data=self.data)
+        self.search_box.delete(0, END)
+        self.vm_list.delete(0, END)
+        for item in sorted(list(self.data.vmdict.keys())):
+            self.vm_list.insert(END, item)
         return

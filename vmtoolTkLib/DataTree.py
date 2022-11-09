@@ -47,3 +47,18 @@ class DataTree:
         if not DataTree.__instance__:
             DataTree()
         return DataTree.__instance__
+
+
+    def clear_data(self):
+        self.content = None
+        self.vmobjlist = None
+        self.vmdict = dict()
+        self.hostobjlist = None
+        self.hostdict = dict()
+        self.datastoreobjlist = None
+        self.datastoredict = dict()
+        self.networkobjlist = None
+        self.networkdict = dict()
+        self.dvswitchobjlist = None
+        self.dvswitchdict = dict()
+        self.dvportgroupdict = dict()
