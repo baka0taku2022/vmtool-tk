@@ -13,7 +13,7 @@ from tkinter import *
 from tkinter.messagebox import *
 
 from pyVim.connect import SmartConnect, Disconnect
-from pyVmomi import vim
+from pyVmomi import vim, vmodl
 
 from .DataTree import DataTree
 from .StatWindow import StatWindow
@@ -608,7 +608,8 @@ def bios_boot(vm: vim.VirtualMachine) -> None:
     boot_spec.enterBIOSSetup = True
     spec.bootOptions = boot_spec
     vm.ReconfigVM_Task(spec=spec)
-    vm.RebootGuest()
+    sleep(1)
+    vm.ResetVM_Task()
     return
 
 
@@ -652,4 +653,46 @@ def rename_obj(obj: vim.ManagedEntity, new_name: str, data: DataTree) -> None:
     obj.Rename_Task(newName=new_name)
     data.clear_data()
     StatWindow(data=data).parse_data()
+    return
+
+
+def get_total_mem(vmobj:vim.VirtualMachine) ->str:
+    if vmobj is not None:
+        return str(vmobj.config.hardware.memoryMB) + " MB"
+    else:
+        return "0"
+
+
+def get_host_name(vmobj:vim.VirtualMachine) ->str:
+    if vmobj is not None:
+        return vmobj.runtime.host.name
+    else:
+        return ""
+
+
+def get_num_processors(vmobj: vim.VirtualMachine) ->str:
+    if vmobj is not None:
+        return str(vmobj.config.hardware.numCPU)
+    else:
+        return "0"
+
+
+def clone_vm(vmobj: vim.VirtualMachine, vm_name: str) -> None:
+    clonefolder = vmobj.parent
+    clonename = vm_name
+    clonespec = vim.VirtualMachineCloneSpec()
+    clonespec.location = vim.VirtualMachineRelocateSpec()
+    vmobj.CloneVM_Task(clonefolder, clonename, clonespec)
+    return
+
+
+def migrate_vm(vmobj:vim.VirtualMachine, hostobj: vim.HostSystem) -> None:
+    spec = vim.VirtualMachineRelocateSpec()
+    spec.host = hostobj
+    vmobj.RelocateVM_Task(spec)
+    return
+
+
+def delete_vm(vmobj: vim.VirtualMachine) -> None:
+    vmobj.Destroy_Task()
     return

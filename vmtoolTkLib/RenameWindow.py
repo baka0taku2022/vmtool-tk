@@ -18,6 +18,8 @@ class RenameWindow:
         self.rename_name.grid(column=1, row=0, padx=10, pady=10)
         self.rename_button.grid(column=0, row=1, columnspan=2, padx=10, pady=10)
 
+        # set rename_name
+        self.rename_name.insert(index=END, string=self.vm.name)
     # handler
     def button_handler(self):
         rename_obj(obj=self.vm, new_name=self.rename_name.get(), data=self.dataset)

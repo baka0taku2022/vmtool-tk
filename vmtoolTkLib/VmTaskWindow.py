@@ -27,15 +27,20 @@ class VmTaskWindow:
         # init list of task objects
         task_objs = list()
         # package tasks in objects and append to list
+
         for task in self.task_collector.latestPage:
             tmp_obj = TaskObj()
             tmp_obj.start_date = str(task.startTime.date())
             tmp_obj.state = task.state
             tmp_obj.description_id = task.descriptionId
             tmp_obj.start_time = str(task.startTime.time())[:str(task.startTime.time()).rfind('.')]
-            tmp_obj.complete_time = str(task.completeTime.time())[:str(task.completeTime.time()).rfind('.')]
-            tmp_obj.time_to_complete = task.completeTime - task.startTime
-            tmp_obj.time_to_complete = str(tmp_obj.time_to_complete)[:str(tmp_obj.time_to_complete).rfind('.')]
+            if task.completeTime is not None:
+                tmp_obj.complete_time = str(task.completeTime.time())[:str(task.completeTime.time()).rfind('.')]
+                tmp_obj.time_to_complete = task.completeTime - task.startTime
+                tmp_obj.time_to_complete = str(tmp_obj.time_to_complete)[:str(tmp_obj.time_to_complete).rfind('.')]
+            else:
+                tmp_obj.complete_time = 0
+                tmp_obj.time_to_complete = 0
             task_objs.append(tmp_obj)
 
         # dynamically create and place widgets
