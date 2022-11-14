@@ -1,2 +1,2 @@
 pyvmomi~=7.0.3
-requests~=2.27.1
+requests==2.28.1

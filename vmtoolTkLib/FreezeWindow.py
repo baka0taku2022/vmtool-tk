@@ -1,8 +1,9 @@
-from tkinter.ttk import Combobox
+"""
+Simple window to give an option of freeze scripts and login credentials to freeze a VM
+"""
 
 import requests
-from pyVmomi import vmodl
-
+from tkinter.ttk import Combobox
 from .FuncLib import *
 
 
@@ -59,71 +60,19 @@ class FreezeWindow:
 
         # handlers
         def freeze_button_handler() -> None:
-            script_file_name: str = self.freeze_combo.get()
-            script_file_obj: FreezeScript = self.script_dictionary.get(script_file_name)
+            script_type: str = self.freeze_combo.get()
+            script_file_obj: FreezeScript = self.script_dictionary.get(script_type)
             script_user: str = self.freeze_user.get()
             script_password: str = self.freeze_password.get()
-            creds: vim.vm.guest.NamePasswordAuthentication = vim.vm.guest.NamePasswordAuthentication(
-                username=script_user, password=script_password)
-            # create File Attributes object
-            file_attr_obj: vim.vm.guest.FileManager.FileAttributes = vim.vm.guest.FileManager.FileAttributes()
-            # get file manager object
-            file_manager: vim.vm.guest.FileManager = self.dataset.content.guestOperationsManager.fileManager
-            # create temp directory on VM
-            try:
-                remote_dir = file_manager.CreateTemporaryDirectoryInGuest(vm=self.vm_object,
-                                                                          auth=creds, prefix='', suffix='')
-            except vim.fault.InvalidGuestLogin:
-                showerror(title="Error", message="Invalid Login")
-                return
-            except vim.fault.GuestOperationsUnavailable:
-                showerror(title="Error", message="Guest services not started.")
-                return
-            # make file path in guest
-            vm_guest_id = self.vm_object.config.guestId
-            vm_regex = r"win"
-            if re.match(vm_regex, vm_guest_id):
-                remote_path = remote_dir + '\\' + script_file_obj.script_file_name
-            else:
-                remote_path = remote_dir + '/' + script_file_obj.script_file_name
-            # get file size
-            file_size = len(script_file_obj.script_content)
-            # initiate file transfer
-            put_url = file_manager.InitiateFileTransferToGuest(vm=self.vm_object, auth=creds, guestFilePath=remote_path,
-                                                               fileAttributes=file_attr_obj, fileSize=file_size,
-                                                               overwrite=True)
-            # push file to vm
-            response = requests.put(url=put_url, data=script_file_obj.script_content, verify=False)
-            if not response.status_code == 200:
-                showerror(title="Error", message="File Transfer Failed.")
 
-            # get process manager singleton
-            process_manager = self.dataset.content.guestOperationsManager.processManager
-
-            # set permissions for linux/bsd
-            if not re.match(vm_regex, vm_guest_id):
-                chmod_prog = "/bin/chmod"
-                chmod_opts = "777 " + remote_path
-                chmod_spec = vim.vm.guest.ProcessManager.ProgramSpec(programPath=chmod_prog, arguments=chmod_opts)
-                process_manager.StartProgramInGuest(vm=self.vm_object, auth=creds, spec=chmod_spec)
-
-            # define spec for program
-            if script_file_name == "Windows Fast Script":
-                program_spec = vim.vm.guest.ProcessManager.ProgramSpec(
-                    programPath=r"c:\windows\system32\WindowsPowerShell\v1.0\powershell.exe", arguments=remote_path)
-            else:
-                program_spec = vim.vm.guest.ProcessManager.ProgramSpec(programPath=remote_path)
-
-            # execute freeze script
-            try:
-                ret = process_manager.StartProgramInGuest(vm=self.vm_object, auth=creds, spec=program_spec)
-            except vmodl.fault.SystemError:
-                showerror(title="Error", message="Unknown system error in guest.")
-                return
-            except vim.fault.GuestPermissionDenied:
-                showerror(title='Error',
-                          message='The guest authentication being used does not have sufficient permissions to perform the operation.')
-                return
+            ret = freeze_vm(script_type=script_type,
+                            user=script_user,
+                            password=script_password,
+                            file_name=script_file_obj.script_file_name,
+                            file_content=script_file_obj.script_content,
+                            data=self.dataset,
+                            vm=self.vm_object)
+            # a return value greater than 0 means success
             if ret > 0:
                 self.top.destroy()
                 showinfo(title="Info", message="Freeze script started")

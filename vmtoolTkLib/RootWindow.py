@@ -14,7 +14,7 @@ class RootWindow:
         # build root window
         self.dataset = data
         self.dataset.rootwin = self.root = Tk()
-        self.root.title('vmtoolTk 0.8')
+        self.root.title('vmtoolTk 0.9')
         self.default_font: Font
         self.default_font = nametofont("TkDefaultFont")
         self.default_font.configure(size=12)

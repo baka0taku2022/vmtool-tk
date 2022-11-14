@@ -1,7 +1,8 @@
 """
-This window is a set of status variables and tools for ESX1 Hosts.
+This window is a set of status variables and tools for ESXi Hosts.
 """
 from .FuncLib import *
+from tkinter.ttk import Progressbar
 
 
 class HostStatusWindow:
@@ -17,6 +18,9 @@ class HostStatusWindow:
         self.cpu_usage: StringVar = StringVar()
         self.memory_usage: StringVar = StringVar()
         self.storage_usage: StringVar = StringVar()
+        self.cpu_usage_var: IntVar = IntVar()
+        self.memory_usage_var: IntVar = IntVar()
+        self.storage_usage_var: IntVar = IntVar()
 
         # define widgets
         self.top: Toplevel = Toplevel(master=self.dataset.rootwin)
@@ -32,8 +36,14 @@ class HostStatusWindow:
         self.cpu_usage_stat: Label = Label(master=self.top, textvariable=self.cpu_usage, relief=SUNKEN)
         self.memory_usage_label: Label = Label(master=self.top, text="Memory Usage")
         self.memory_usage_stat: Label = Label(master=self.top, textvariable=self.memory_usage, relief=SUNKEN)
-        self.storage_usage_label: Label = Label(master=self.top, text="Storage Usage")
+        self.storage_usage_label: Label = Label(master=self.top, text="Storage Free")
         self.storage_usage_stat: Label = Label(master=self.top, textvariable=self.storage_usage, relief=SUNKEN)
+        self.cpu_bar: Progressbar = Progressbar(master=self.top, maximum=100, orient=HORIZONTAL,
+                                                variable=self.cpu_usage_var)
+        self.memory_bar: Progressbar = Progressbar(master=self.top, maximum=100, orient=HORIZONTAL,
+                                                   variable=self.memory_usage_var)
+        self.storage_bar: Progressbar = Progressbar(master=self.top, maximum=100, orient=HORIZONTAL,
+                                                    variable=self.storage_usage_var)
 
         # place widgets
         self.host_list_label.grid(column=0, row=0, padx=10, pady=10)
@@ -50,6 +60,9 @@ class HostStatusWindow:
         self.cpu_usage_stat.grid(column=3, row=2, padx=10, pady=10)
         self.memory_usage_stat.grid(column=3, row=3, padx=10, pady=10)
         self.storage_usage_stat.grid(column=3, row=4, padx=10, pady=10)
+        self.cpu_bar.grid(column=4, row=2, padx=10, pady=10)
+        self.memory_bar.grid(column=4, row=3, padx=10, pady=10)
+        self.storage_bar.grid(column=4, row=4, padx=10, pady=10)
 
         # define scrollbar properties
         self.host_list.config(yscrollcommand=self.host_scroll.set)
@@ -68,14 +81,23 @@ class HostStatusWindow:
         # get text from selection
         if not selected_index:
             selected_name: str = ""
-        # get vm name from listbox
+        # get host name from listbox
         else:
             selected_name: str = self.host_list.get(selected_index)
-        # get vm object from dictionary
+        # get host object from dictionary
         self.host_object: vim.HostSystem = self.hostdict.get(selected_name)
+
+        # get values from host
         self.powered_on.set(str(is_host_powered_on(hostobj=self.host_object)))
         self.maintenance_mode.set(str(is_host_in_maint_mode(hostobj=self.host_object)))
-        self.cpu_usage.set(get_host_cpu_usage(hostobj=self.host_object))
-        self.memory_usage.set(get_host_memory_usage(hostobj=self.host_object))
-        self.storage_usage.set(get_host_storage_usage(hostobj=self.host_object))
+        cpu_usage = get_host_cpu_usage(hostobj=self.host_object)
+        mem_usage = get_host_memory_usage(hostobj=self.host_object)
+        storage_usage = get_host_storage_usage(hostobj=self.host_object)
+        self.cpu_usage.set(str(cpu_usage) + '%')
+        self.memory_usage.set(str(mem_usage) + '%')
+        self.storage_usage.set(str(storage_usage) + '% Free')
+        self.cpu_usage_var.set(cpu_usage)
+        self.memory_usage_var.set(mem_usage)
+        self.storage_usage_var.set(storage_usage)
+        self.top.update_idletasks()
         return

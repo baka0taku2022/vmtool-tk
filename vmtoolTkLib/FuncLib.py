@@ -7,19 +7,18 @@ written once.
 import random
 import ssl
 import re
+import requests
 from socket import gaierror
 from time import sleep
 from tkinter import *
 from tkinter.messagebox import *
-
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim, vmodl
-
 from .DataTree import DataTree
 from .StatWindow import StatWindow
 
 
-# establish connection
+# establish connection to vCenter
 def make_connection(dataset: DataTree, fqdn: str, user: str, passwd: str) -> bool:
     try:
         s = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
@@ -35,7 +34,7 @@ def make_connection(dataset: DataTree, fqdn: str, user: str, passwd: str) -> boo
         return False
 
 
-# cleanup
+# cleanup and disconnect from vCenter
 def cleanup(dataset: DataTree, rootwin: Tk) -> None:
     # disconnect from server
     if dataset.connection:
@@ -45,7 +44,7 @@ def cleanup(dataset: DataTree, rootwin: Tk) -> None:
     return
 
 
-# move boxes
+# move to another listbox
 def mv_lstbox(orig_list: Listbox, dest_list: Listbox) -> None:
     vms = list()
     # get all selected items
@@ -229,47 +228,74 @@ def clone_dvportgroup(pgobj: vim.dvs.DistributedVirtualPortgroup) -> bool:
         showerror(title="Error", message=tsk.info.error.msg)
         return False
     return True
+
+
 # reset VM
 def reset_vm(vmobj: vim.VirtualMachine) -> bool:
-    if not vmobj.ResetVM_Task():
+    tsk = vmobj.ResetVM_Task()
+    sleep(.5)
+    if tsk.info.error is not None:
+        showerror(title="Error", message=tsk.info.error.msg)
         return False
     return True
+
+
 # reboot VM
-def reboot_vm_guest(vmobj: vim.VirtualMachine) ->bool:
-    if not vmobj.RebootGuest():
+def reboot_vm_guest(vmobj: vim.VirtualMachine) -> bool:
+    tsk = vmobj.RebootGuest()
+    sleep(.5)
+    if tsk.info.error is not None:
+        showerror(title="Error", message=tsk.info.error.msg)
         return False
     return True
+
+
 # shutdown VM guest
 def shutdown_vm(vmobj: vim.VirtualMachine) -> bool:
-    if not vmobj.ShutdownGuest():
+    tsk = vmobj.ShutdownGuest()
+    sleep(.5)
+    if tsk.info.error is not None:
+        showerror(title="Error", message=tsk.info.error.msg)
         return False
     return True
 
 
 # power off VM
 def poweroff_vm(vmobj: vim.VirtualMachine) -> bool:
-    if not vmobj.PowerOffVM_Task():
+    tsk = vmobj.PowerOffVM_Task()
+    sleep(.5)
+    if tsk.info.error is not None:
+        showerror(title="Error", message=tsk.info.error.msg)
         return False
     return True
 
 
 # power on VM
 def power_on_vm(vmobj: vim.VirtualMachine) -> bool:
-    if not vmobj.PowerOnVM_Task():
+    tsk = vmobj.PowerOnVM_Task()
+    sleep(.5)
+    if tsk.info.error is not None:
+        showerror(title="Error", message=tsk.info.error.msg)
         return False
     return True
 
 
 # put host in Maintenance Mode
 def host_maint_mode_on(hostobj: vim.HostSystem) -> bool:
-    if not hostobj.EnterMaintenanceMode_Task(timeout=0):
+    tsk = hostobj.EnterMaintenanceMode_Task(timeout=0)
+    sleep(.5)
+    if tsk.info.error is not None:
+        showerror(title="Error", message=tsk.info.error.msg)
         return False
     return True
 
 
 # shut down Host
 def host_shut_down(hostobj: vim.HostSystem) -> bool:
-    if not hostobj.ShutdownHost_Task(force=True):
+    tsk = hostobj.ShutdownHost_Task(force=True)
+    sleep(.5)
+    if tsk.info.error is not None:
+        showerror(title="Error", message=tsk.info.error.msg)
         return False
     return True
 
@@ -298,14 +324,6 @@ def is_powered_off(vm: vim.VirtualMachine) -> bool:
         return True
     else:
         return False
-
-
-# add to Log widget
-def append_log(log: Text, message: str, parent_win: Toplevel) -> None:
-    log.insert(END, message + '\n')
-    log.see(END)
-    parent_win.update_idletasks()
-    return
 
 
 # Is host powered ON
@@ -504,6 +522,7 @@ def key_combo(normal_key: str, left_alt: bool, left_shift: bool, left_ctrl: bool
     return spec
 
 
+# convert string to usb scancode
 def str_to_usb(input_string: str) -> vim.UsbScanCodeSpec:
     # clear out newlines
     # input_string = input_string.replace("\n", '')
@@ -526,13 +545,14 @@ def str_to_usb(input_string: str) -> vim.UsbScanCodeSpec:
     return spec
 
 
-# multiple clone functions
+# make multiple linked clones
 def multi_linked_clones(vm_names: list, num_of_clones: int, data: DataTree) -> None:
     for x in range(num_of_clones):
         send_clone_task(names=vm_names, data=data, typeclone="linked")
     return
 
 
+# make multiple instant clones
 def multi_instant_clones(vm_names: list, num_of_clones: int, data: DataTree) -> None:
     for x in range(num_of_clones):
         send_clone_task(names=vm_names, data=data, typeclone="instant")
@@ -590,6 +610,8 @@ def get_num_disk_files(vm: vim.VirtualMachine) -> str:
     except AttributeError:
         return "0"
 
+
+# create a VM snapshot
 def create_snapshot(snapshot_name: str, vm: vim.VirtualMachine, snapshot_desc: str, snapshot_memory: bool,
                     snapshot_quiesce: bool):
     task = vm.CreateSnapshot_Task(name=snapshot_name,
@@ -602,6 +624,8 @@ def create_snapshot(snapshot_name: str, vm: vim.VirtualMachine, snapshot_desc: s
     else:
         return True
 
+
+# boot VM into BIOS
 def bios_boot(vm: vim.VirtualMachine) -> None:
     spec = vim.vm.ConfigSpec()
     boot_spec = vim.vm.BootOptions()
@@ -609,34 +633,41 @@ def bios_boot(vm: vim.VirtualMachine) -> None:
     spec.bootOptions = boot_spec
     vm.ReconfigVM_Task(spec=spec)
     sleep(1)
-    vm.ResetVM_Task()
+    tsk = vm.ResetVM_Task()
+    if tsk.info.error is not None:
+        vm.PowerOnVM_Task()
     return
 
 
-def get_host_cpu_usage(hostobj: vim.HostSystem) -> str:
-    total_mhz = hostobj.summary.hardware.cpuMhz * hostobj.summary.hardware.numCpuCores * hostobj.summary.hardware.numCpuPkgs
+# get host cpu usage
+def get_host_cpu_usage(hostobj: vim.HostSystem) -> int:
+    hardware = hostobj.summary.hardware
+    total_mhz = hardware.cpuMhz * hardware.numCpuCores * hardware.numCpuPkgs
     used_mhz = hostobj.summary.quickStats.overallCpuUsage
     percentage_used = int((used_mhz / total_mhz) * 100)
-    return str(percentage_used) + '%'
+    return percentage_used
 
 
-def get_host_memory_usage(hostobj: vim.HostSystem) -> str:
+# get host memory usage
+def get_host_memory_usage(hostobj: vim.HostSystem) -> int:
     total_memory = hostobj.summary.hardware.memorySize / 1024 / 1024
     used_memory = hostobj.summary.quickStats.overallMemoryUsage
     percentage_used = int((used_memory / total_memory) * 100)
-    return str(percentage_used) + '%'
+    return percentage_used
 
 
-def get_host_storage_usage(hostobj: vim.HostSystem) -> str:
+# get host storage usage
+def get_host_storage_usage(hostobj: vim.HostSystem) -> int:
     total_storage = 0
     free_storage = 0
     for ds in hostobj.datastore:
         total_storage += ds.summary.capacity
         free_storage += ds.summary.freeSpace
     percentage_used = int((free_storage / total_storage) * 100)
-    return str(percentage_used) + '% Free'
+    return percentage_used
 
 
+# get swapped RAM from VM
 def get_swapped_ram(vmobj: vim.VirtualMachine) -> str:
     if vmobj is not None:
         return str(vmobj.summary.quickStats.swappedMemory) + 'MB'
@@ -644,55 +675,152 @@ def get_swapped_ram(vmobj: vim.VirtualMachine) -> str:
         return "0MB"
 
 
-def set_screen_resolution(vmobj: vim.VirtualMachine, width:int, height:int) ->None:
+# set VM screen resolution
+def set_screen_resolution(vmobj: vim.VirtualMachine, width: int, height: int) -> None:
     vmobj.SetScreenResolution(width=width, height=height)
     return
 
 
+# rename managed entity
 def rename_obj(obj: vim.ManagedEntity, new_name: str, data: DataTree) -> None:
-    obj.Rename_Task(newName=new_name)
+    tsk = obj.Rename_Task(newName=new_name)
+    sleep(.5)
+    if tsk.info.error is not None:
+        showerror(title="Error", message=tsk.info.error.msg)
+        return
     data.clear_data()
     StatWindow(data=data).parse_data()
     return
 
 
-def get_total_mem(vmobj:vim.VirtualMachine) ->str:
+# Get VM total memory
+def get_total_mem(vmobj: vim.VirtualMachine) -> str:
     if vmobj is not None:
         return str(vmobj.config.hardware.memoryMB) + " MB"
     else:
         return "0"
 
 
-def get_host_name(vmobj:vim.VirtualMachine) ->str:
+# get host name
+def get_host_name(vmobj: vim.VirtualMachine) -> str:
     if vmobj is not None:
         return vmobj.runtime.host.name
     else:
         return ""
 
 
-def get_num_processors(vmobj: vim.VirtualMachine) ->str:
+# get number of CPU from VM
+def get_num_processors(vmobj: vim.VirtualMachine) -> str:
     if vmobj is not None:
         return str(vmobj.config.hardware.numCPU)
     else:
         return "0"
 
 
+# vanilla clone of VM
 def clone_vm(vmobj: vim.VirtualMachine, vm_name: str) -> None:
     clonefolder = vmobj.parent
     clonename = vm_name
     clonespec = vim.VirtualMachineCloneSpec()
     clonespec.location = vim.VirtualMachineRelocateSpec()
-    vmobj.CloneVM_Task(clonefolder, clonename, clonespec)
+    tsk = vmobj.CloneVM_Task(clonefolder, clonename, clonespec)
+    sleep(.5)
+    if tsk.info.error is not None:
+        showerror(title="Error", message=tsk.info.error.msg)
+        return
     return
 
 
-def migrate_vm(vmobj:vim.VirtualMachine, hostobj: vim.HostSystem) -> None:
+# migrate VM
+def migrate_vm(vmobj: vim.VirtualMachine, hostobj: vim.HostSystem, dsobj: vim.Datastore) -> bool:
     spec = vim.VirtualMachineRelocateSpec()
     spec.host = hostobj
-    vmobj.RelocateVM_Task(spec)
-    return
+    spec.datastore = dsobj
+    tsk = vmobj.RelocateVM_Task(spec)
+    sleep(.5)
+    if tsk.info.error is not None:
+        showerror(title="Error", message=tsk.info.error.msg)
+        return False
+    return True
 
 
+# delete VM
 def delete_vm(vmobj: vim.VirtualMachine) -> None:
-    vmobj.Destroy_Task()
+    tsk = vmobj.Destroy_Task()
+    sleep(.5)
+    if tsk.info.error is not None:
+        showerror(title="Error", message=tsk.info.error.msg)
+        return
     return
+
+
+# freeze VM
+def freeze_vm(user: str,
+              password: str,
+              script_type: str,
+              file_name: str,
+              file_content: str,
+              data: DataTree,
+              vm: vim.VirtualMachine) -> int:
+    # create credential object for authentication
+    creds: vim.vm.guest.NamePasswordAuthentication = vim.vm.guest.NamePasswordAuthentication(
+        username=user, password=password)
+    # create File Attributes object
+    file_attr_obj: vim.vm.guest.FileManager.FileAttributes = vim.vm.guest.FileManager.FileAttributes()
+    # get file manager object
+    file_manager: vim.vm.guest.FileManager = data.content.guestOperationsManager.fileManager
+    # create temp directory on VM
+    try:
+        remote_dir = file_manager.CreateTemporaryDirectoryInGuest(vm=vm, auth=creds, prefix='', suffix='')
+    except vim.fault.InvalidGuestLogin:
+        showerror(title="Error", message="Invalid Login")
+        return 0
+    except vim.fault.GuestOperationsUnavailable:
+        showerror(title="Error", message="Guest services not started.")
+        return 0
+    # make file path in guest
+    vm_guest_id = vm.config.guestId
+    vm_regex = r"win"
+    if re.match(vm_regex, vm_guest_id):
+        remote_path = remote_dir + '\\' + file_name
+    else:
+        remote_path = remote_dir + '/' + file_name
+    # get file size
+    file_size = len(file_content)
+    # initiate file transfer
+    put_url = file_manager.InitiateFileTransferToGuest(vm=vm, auth=creds, guestFilePath=remote_path,
+                                                       fileAttributes=file_attr_obj, fileSize=file_size,
+                                                       overwrite=True)
+    # push file to vm
+    response = requests.put(url=put_url, data=file_content, verify=False)
+    if not response.status_code == 200:
+        showerror(title="Error", message="File Transfer Failed.")
+
+    # get process manager singleton
+    process_manager = data.content.guestOperationsManager.processManager
+
+    # set permissions for linux/bsd
+    if not re.match(vm_regex, vm_guest_id):
+        chmod_prog = "/bin/chmod"
+        chmod_opts = "777 " + remote_path
+        chmod_spec = vim.vm.guest.ProcessManager.ProgramSpec(programPath=chmod_prog, arguments=chmod_opts)
+        process_manager.StartProgramInGuest(vm=vm, auth=creds, spec=chmod_spec)
+
+    # define spec for program
+    if script_type == "Windows Fast Script":
+        program_spec = vim.vm.guest.ProcessManager.ProgramSpec(
+            programPath=r"c:\windows\system32\WindowsPowerShell\v1.0\powershell.exe", arguments=remote_path)
+    else:
+        program_spec = vim.vm.guest.ProcessManager.ProgramSpec(programPath=remote_path)
+
+    # execute freeze script
+    try:
+        ret = process_manager.StartProgramInGuest(vm=vm, auth=creds, spec=program_spec)
+        return ret
+    except vmodl.fault.SystemError:
+        showerror(title="Error", message="Unknown system error in guest.")
+        return 0
+    except vim.fault.GuestPermissionDenied:
+        showerror(title='Error',
+                  message='The guest authentication used does not have permissions to perform the operation.')
+        return 0

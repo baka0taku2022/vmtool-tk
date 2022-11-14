@@ -26,11 +26,6 @@ class ConnectionWin:
             self.serverlabel = Label(master=self.connwin, text="Enter a FQDN or IP Address of vCenter", padx=5, pady=5)
             self.userlabel = Label(master=self.connwin, text="Enter Username", padx=5)
             self.userentry = Entry(master=self.connwin, width=50)
-        elif self.conntype == "esxi":
-            self.serverlabel = Label(master=self.connwin, text="Enter a FQDN or IP Address of ESXi", padx=5, pady=5)
-            self.userlabel = Label(master=self.connwin, text="Username (change if not root)", padx=5)
-            self.userentry = Entry(master=self.connwin, width=50)
-            self.userentry.insert(0, "root")
 
         self.passlabel = Label(master=self.connwin, text="Enter Password", padx=5)
         self.passentry = Entry(master=self.connwin, width=50, show='*')

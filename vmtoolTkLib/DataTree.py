@@ -42,13 +42,14 @@ class DataTree:
         else:
             raise Exception("THERE CAN BE ONLY ONE!!!!")
 
+    # method to return a single instance
     @staticmethod
     def get_instance():
         if not DataTree.__instance__:
             DataTree()
         return DataTree.__instance__
 
-
+    # method to clear non-connection data
     def clear_data(self):
         self.content = None
         self.vmobjlist = None

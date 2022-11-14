@@ -8,6 +8,7 @@
 """
 from pyVmomi import vmodl
 from .FuncLib import *
+from tkinter.ttk import Progressbar
 
 
 class StatWindow:
@@ -18,24 +19,29 @@ class StatWindow:
         # StringVar for dynamic text in window
         self.tvar: StringVar = StringVar()
         self.tvar.set("Getting content from vCenter...")
-        # create new window
-        self.statWin: Toplevel = Toplevel(master=self.dataset.rootwin)
+        self.progress_var = DoubleVar()
+        self.progress_var.set(0.0)
 
         # define widgets
+        self.statWin: Toplevel = Toplevel(master=self.dataset.rootwin)
         self.container: Frame = Frame(master=self.statWin, padx=20, pady=20)
         self.statlab: Label = Label(master=self.container, textvariable=self.tvar)
+        self.progress_bar = Progressbar(master=self.container, length=100, orient=HORIZONTAL, maximum=1,
+                                        variable=self.progress_var,)
         # place widgets
-        self.statlab.grid(row=0, column=0, pady=20, sticky=E + W)
+        self.statlab.grid(row=0, column=0, pady=10, padx=10, sticky=E + W)
+        self.progress_bar.grid(column=0, row=1, padx=10, pady=10)
         self.container.pack(expand=True, fill=BOTH, padx=30, pady=30)
+
         self.statWin.update()
         self.parse_data()
-        sleep(1)
         self.statWin.destroy()
 
     def parse_data(self) -> None:
         # get all content
         self.dataset.content = self.dataset.connection.RetrieveContent()
-
+        self.progress_var.set(1/7)
+        self.statWin.update_idletasks()
         # get all Data Sets
         self.tvar.set("Getting Views From Server...")
         self.statlab.update()
@@ -60,25 +66,29 @@ class StatWindow:
         self.dataset.dvswitchobjlist = self.dataset.content.viewManager.CreateContainerView(
             self.dataset.content.rootFolder,
             [vim.DistributedVirtualSwitch], True)
-
+        self.progress_var.set(2 / 7)
+        self.statWin.update_idletasks()
         # build dictionaries
         self.tvar.set("Building Host dictionary...")
         self.statlab.update()
         for host in self.dataset.hostobjlist.view:
             self.dataset.hostdict[host.name] = host
-
+        self.progress_var.set(3 / 7)
+        self.statWin.update_idletasks()
         self.tvar.set("Building Dataset dictionary...")
         self.statlab.update()
 
         for ds in self.dataset.datastoreobjlist.view:
             self.dataset.datastoredict[ds.name] = ds
-
+        self.progress_var.set(4 / 7)
+        self.statWin.update_idletasks()
         self.tvar.set("Building DVswitch dictionary...")
         self.statlab.update()
 
         for dvs in self.dataset.dvswitchobjlist.view:
             self.dataset.dvswitchdict[dvs.name] = dvs
-
+        self.progress_var.set(5/7)
+        self.statWin.update_idletasks()
         # build VM dict
         self.tvar.set("Building Dictionary for VMs...")
         self.statlab.update()
@@ -106,7 +116,8 @@ class StatWindow:
                     self.dataset.vmdict[obj.propSet[0].val] = obj.obj
         except vmodl.fault.ManagedObjectNotFound:
             pass
-
+        self.progress_var.set(6 / 7)
+        self.statWin.update_idletasks()
         # build net dict
         self.tvar.set("Building Dictionary for Portgroups...")
         self.statlab.update()
@@ -134,5 +145,6 @@ class StatWindow:
                     self.dataset.dvportgroupdict[obj.propSet[0].val] = obj.obj
         except vmodl.fault.ManagedObjectNotFound:
             pass
-
+        self.progress_var.set(7 / 7)
+        self.statWin.update_idletasks()
         return

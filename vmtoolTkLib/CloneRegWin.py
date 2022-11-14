@@ -1,3 +1,8 @@
+"""
+Simple window for a normal clone operation
+"""
+
+# imports
 from .FuncLib import *
 
 class CloneRegWin:
@@ -19,7 +24,7 @@ class CloneRegWin:
         self.clone_name.grid(column=1, row=0, padx=10, pady=10)
         self.clone_button.grid(column=0, row=1, padx=10, pady=10, columnspan=2)
 
-        # button Handler
+    # button Handler
     def button_handler(self):
         clone_vm(vmobj=self.vm_object, vm_name=self.clone_name.get())
         showinfo(title="Info", message="Clone Task Sent")

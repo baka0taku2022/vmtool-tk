@@ -195,39 +195,55 @@ class VmStatusWindow:
 
     # button handling
     def power_on_handler(self) -> None:
+        if self.vm_object is None:
+            return
         power_on_vm(vmobj=self.vm_object)
         showinfo(title="Info", message="Power On Sent")
         return
 
     def power_off_handler(self) -> None:
+        if self.vm_object is None:
+            return
         poweroff_vm(vmobj=self.vm_object)
         showinfo(title="Info", message="Power Off Sent")
         return
 
     def promote_handler(self) -> None:
+        if self.vm_object is None:
+            return
         promote_clone(self.vm_object)
         showinfo(title="Info", message="Promote task sent")
         return
 
     def snapshot_handler(self) -> None:
+        if self.vm_object is None:
+            return
         SnapshotWindow(data_set=self.data, vm=self.vm_object)
         return
 
     def freeze_handler(self) -> None:
+        if self.vm_object is None:
+            return
         FreezeWindow(data=self.data, vm=self.vm_object)
         return
 
     def bios_boot_handler(self) -> None:
+        if self.vm_object is None:
+            return
         bios_boot(vm=self.vm_object)
         showinfo(title="Info", message="BIOS Boot Sent")
         return
 
     def linked_clone_handler(self) -> None:
+        if self.vm_object is None:
+            return
         make_linked_clone(vmobj=self.vm_object)
         showinfo(title="Info", message="Linked Clone Task Sent")
         return
 
     def instant_clone_handler(self) -> None:
+        if self.vm_object is None:
+            return
         make_instant_clone(vmobj=self.vm_object)
         showinfo(title="Info", message="Instant Clone Task Sent")
         return
@@ -254,21 +270,29 @@ class VmStatusWindow:
         return
 
     def reset_button_handler(self):
+        if self.vm_object is None:
+            return
         reset_vm(vmobj=self.vm_object)
         showinfo(title="Info", message="VM Reset Sent")
         return
 
     def reboot_button_handler(self):
+        if self.vm_object is None:
+            return
         reboot_vm_guest(vmobj=self.vm_object)
         showinfo(title="Info", message="Guest Reboot Sent")
         return
 
     def shutdown_button_handler(self):
+        if self.vm_object is None:
+            return
         shutdown_vm(vmobj=self.vm_object)
         showinfo(title="Info", message="Guest Shutdown Sent")
         return
 
     def screen_resolution_handler(self):
+        if self.vm_object is None:
+            return
         try:
             set_screen_resolution(vmobj=self.vm_object, width=1280, height=960)
             showinfo(title="Info", message="Resolution Set")
@@ -279,10 +303,14 @@ class VmStatusWindow:
             showerror(title="Error", message="System Error")
 
     def tasks_handler(self) -> None:
+        if self.vm_object is None:
+            return
         VmTaskWindow(data=self.data, vmobj=self.vm_object)
         return
 
     def rename_handler(self):
+        if self.vm_object is None:
+            return
         RenameWindow(vmobj=self.vm_object, data=self.data)
         self.search_box.delete(0, END)
         self.vm_list.delete(0, END)
@@ -301,16 +329,22 @@ class VmStatusWindow:
 
 
     def clone_handler(self):
+        if self.vm_object is None:
+            return
         CloneRegWin(data=self.data, vm=self.vm_object)
         return
 
 
     def migrate_handler(self):
+        if self.vm_object is None:
+            return
         MigrateWindow(data=self.data, vmobj=self.vm_object)
         return
 
 
     def delete_handler(self):
+        if self.vm_object is None:
+            return
         delete_vm(vmobj=self.vm_object)
         showinfo(title="Info", message="VM Deleted")
         return
