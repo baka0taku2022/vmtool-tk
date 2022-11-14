@@ -1,6 +1,6 @@
 # vmtool-tk
 
-This is a set of tools that can be used against VCenter 6.7/7.0 to perfom a few actions that are available in the API, but not the GUI.
+This is a set of tools that can be used against VCenter 6.7/7.0 to perfom many actions. Including some only found in the API.
 These include the following:
 
 1. Creating linked clones.
@@ -10,6 +10,11 @@ These include the following:
 5. Pasting text into a VM.
 6. Various VM stats.
 7. Freezing a clone.
+8. Regular clone operation.
+9. View latest tasks.
+10. Host Stats.
+11. VM migration.
+12. Deleting a VM
 
 More features are planned.
 
