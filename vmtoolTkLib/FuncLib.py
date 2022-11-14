@@ -328,6 +328,8 @@ def is_powered_off(vm: vim.VirtualMachine) -> bool:
 
 # Is host powered ON
 def is_host_powered_on(hostobj: vim.HostSystem) -> bool:
+    if hostobj is None:
+        return False
     if str(hostobj.runtime.powerState) == "poweredOn":
         return True
     else:
@@ -336,6 +338,8 @@ def is_host_powered_on(hostobj: vim.HostSystem) -> bool:
 
 # Is host powered OFF
 def is_host_powered_off(hostobj: vim.HostSystem) -> bool:
+    if hostobj is None:
+        return False
     if str(hostobj.runtime.powerState) == "poweredOff":
         return True
     else:
@@ -344,6 +348,8 @@ def is_host_powered_off(hostobj: vim.HostSystem) -> bool:
 
 # Is host in maintenance mode?
 def is_host_in_maint_mode(hostobj: vim.HostSystem) -> bool:
+    if hostobj is None:
+        return False
     if hostobj.runtime.inMaintenanceMode:
         return True
     else:
@@ -641,8 +647,10 @@ def bios_boot(vm: vim.VirtualMachine) -> None:
 
 # get host cpu usage
 def get_host_cpu_usage(hostobj: vim.HostSystem) -> int:
+    if hostobj is None:
+        return 0
     hardware = hostobj.summary.hardware
-    total_mhz = hardware.cpuMhz * hardware.numCpuCores * hardware.numCpuPkgs
+    total_mhz = hardware.cpuMhz * hardware.numCpuCores
     used_mhz = hostobj.summary.quickStats.overallCpuUsage
     percentage_used = int((used_mhz / total_mhz) * 100)
     return percentage_used
@@ -650,6 +658,8 @@ def get_host_cpu_usage(hostobj: vim.HostSystem) -> int:
 
 # get host memory usage
 def get_host_memory_usage(hostobj: vim.HostSystem) -> int:
+    if hostobj is None:
+        return 0
     total_memory = hostobj.summary.hardware.memorySize / 1024 / 1024
     used_memory = hostobj.summary.quickStats.overallMemoryUsage
     percentage_used = int((used_memory / total_memory) * 100)
@@ -658,6 +668,8 @@ def get_host_memory_usage(hostobj: vim.HostSystem) -> int:
 
 # get host storage usage
 def get_host_storage_usage(hostobj: vim.HostSystem) -> int:
+    if hostobj is None:
+        return 0
     total_storage = 0
     free_storage = 0
     for ds in hostobj.datastore:

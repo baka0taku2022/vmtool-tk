@@ -86,7 +86,6 @@ class HostStatusWindow:
             selected_name: str = self.host_list.get(selected_index)
         # get host object from dictionary
         self.host_object: vim.HostSystem = self.hostdict.get(selected_name)
-
         # get values from host
         self.powered_on.set(str(is_host_powered_on(hostobj=self.host_object)))
         self.maintenance_mode.set(str(is_host_in_maint_mode(hostobj=self.host_object)))
