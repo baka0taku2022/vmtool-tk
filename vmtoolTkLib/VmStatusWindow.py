@@ -301,6 +301,8 @@ class VmStatusWindow:
             showerror(title="Error", message="VM Tools not available.")
         except vmodl.fault.SystemError:
             showerror(title="Error", message="System Error")
+        except vmodl.fault.NotSupported:
+            showerror(title="Error", message='The operation is not supported on the object.')
 
     def tasks_handler(self) -> None:
         if self.vm_object is None:

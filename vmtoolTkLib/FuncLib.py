@@ -790,6 +790,9 @@ def freeze_vm(user: str,
     except vim.fault.GuestOperationsUnavailable:
         showerror(title="Error", message="Guest services not started.")
         return 0
+    except vmodl.fault.SystemError:
+        showerror(title="Error", message="System Error")
+        return 0
     # make file path in guest
     vm_guest_id = vm.config.guestId
     vm_regex = r"win"
