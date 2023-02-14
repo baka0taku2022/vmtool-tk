@@ -2,8 +2,8 @@
 Simple window to give an option of freeze scripts and login credentials to freeze a VM
 """
 
-import requests
 from tkinter.ttk import Combobox
+
 from .FuncLib import *
 
 
@@ -28,7 +28,7 @@ class FreezeWindow:
         windows_reboot_script.script_file_name = "freeze.bat"
         windows_reboot_script.script_content = r'"C:\Program Files\VMware\VMware Tools\rpctool.exe" "instantclone.freeze" && shutdown /r /t 001'
         windows_fast_script.script_file_name = 'fast-freeze.ps1'
-        windows_fast_script.script_content = r'cd "C:\Program Files\VMware\VMware Tools"; .\rpctool.exe "instantclone.freeze"; ping 127.0.0.1; Get-NetAdapter | Enable-NetAdapter; shutdown /l > output'
+        windows_fast_script.script_content = r'cd "C:\Program Files\VMware\VMware Tools"; .\rpctool.exe "instantclone.freeze"; ping 127.0.0.1; Get-NetAdapter | Enable-NetAdapter > output'
         linbsd_reboot_script.script_file_name = 'freeze.sh'
         linbsd_reboot_script.script_content = r'vmware-rpctool "instantclone.freeze" && init 6'
 
