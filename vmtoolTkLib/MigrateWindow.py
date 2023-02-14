@@ -7,8 +7,9 @@ class MigrateWindow:
         self.button_var: StringVar = StringVar()
         self.button_var.set("Next")
         self.label_var: StringVar = StringVar()
-        self.label_var.set("Hosts:")
+        self.label_var.set("Cluster:")
         self.host_object = None
+        self.resource_pool = None
         self.dsdict = dict()
 
         # Define widgets
@@ -20,7 +21,7 @@ class MigrateWindow:
         self.migrate_button = Button(master=self.top, width=50, textvariable=self.button_var, command=lambda: self.migrate_handler1())
 
         # add hosts
-        self.host_list.insert(END, *sorted(list(self.dataset.hostdict.keys())))
+        self.host_list.insert(END, *sorted(list(self.dataset.resourcepooldict.keys())))
 
         # Place widgets
         self.host_list_label.grid(column=0, row=0, padx=10, pady=10)
@@ -33,13 +34,11 @@ class MigrateWindow:
     def migrate_handler1(self):
         selected_index: tuple = self.host_list.curselection()
         selected_name: str = self.host_list.get(selected_index)
-        self.host_object = self.dataset.hostdict.get(selected_name)
-        self.button_var.set("Migrate VM")
-        self.label_var.set("Datastores:")
+        self.resource_pool = self.dataset.resourcepooldict.get(selected_name)
+        self.label_var.set("Hosts:")
         self.host_list.delete(0, END)
-        for ds in self.host_object.datastore:
-            self.dsdict[ds.name] = ds
-            self.host_list.insert(END, ds.name)
+        for h in self.resource_pool.parent.host:
+            self.host_list.insert(END, h.name)
         self.migrate_button.config(command=lambda: self.migrate_handler2())
         self.top.update_idletasks()
         return
@@ -47,8 +46,21 @@ class MigrateWindow:
     def migrate_handler2(self):
         selected_index: tuple = self.host_list.curselection()
         selected_name: str = self.host_list.get(selected_index)
+        self.host_object = self.dataset.hostdict.get(selected_name)
+        self.button_var.set("Migrate VM")
+        self.label_var.set("Datastores:")
+        self.host_list.delete(0, END)
+        for ds in self.host_object.datastore:
+            self.dsdict[ds.name] = ds
+            self.host_list.insert(END, ds.name)
+        self.migrate_button.config(command=lambda: self.migrate_handler3())
+        self.top.update_idletasks()
+    def migrate_handler3(self):
+        selected_index: tuple = self.host_list.curselection()
+        selected_name: str = self.host_list.get(selected_index)
         datastore = self.dsdict.get(selected_name)
-        migrate_vm(vmobj=self.vm, hostobj=self.host_object, dsobj=datastore)
-        showinfo(title="Info", message="Migration Task Sent")
+        result = migrate_vm(vmobj=self.vm, hostobj=self.host_object, dsobj=datastore, pool=self.resource_pool)
+        if result:
+            showinfo(title="Info", message="Migration Task Sent")
         self.top.destroy()
         return

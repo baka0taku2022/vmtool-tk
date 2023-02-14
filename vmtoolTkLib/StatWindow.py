@@ -66,6 +66,11 @@ class StatWindow:
         self.dataset.dvswitchobjlist = self.dataset.content.viewManager.CreateContainerView(
             self.dataset.content.rootFolder,
             [vim.DistributedVirtualSwitch], True)
+
+        # Resource Pool set
+        self.dataset.resourcepoollist = self.dataset.content.viewManager.CreateContainerView(self.dataset.content.rootFolder,
+                                                                                             [vim.ResourcePool], True)
+
         self.progress_var.set(2 / 7)
         self.statWin.update_idletasks()
         # build dictionaries
@@ -93,6 +98,10 @@ class StatWindow:
         self.tvar.set("Building Dictionary for VMs...")
         self.statlab.update()
         obj_specs: list = list()
+
+        for pool in self.dataset.resourcepoollist.view:
+            self.dataset.resourcepooldict[pool.parent.name] = pool
+
         for vm in self.dataset.vmobjlist.view:
             obj_spec = vmodl.query.PropertyCollector.ObjectSpec(obj=vm)
             obj_specs.append(obj_spec)

@@ -38,6 +38,10 @@ class DataTree:
             self.dvswitchobjlist = None
             self.dvswitchdict = dict()
             self.dvportgroupdict = dict()
+            self.resourcepoollist: vim.view.ContainerView
+            self.resourcepoollist = None
+            self.resourcepooldict = dict()
+
 
         else:
             raise Exception("THERE CAN BE ONLY ONE!!!!")

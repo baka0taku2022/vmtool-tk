@@ -744,10 +744,12 @@ def clone_vm(vmobj: vim.VirtualMachine, vm_name: str) -> None:
 
 
 # migrate VM
-def migrate_vm(vmobj: vim.VirtualMachine, hostobj: vim.HostSystem, dsobj: vim.Datastore) -> bool:
+def migrate_vm(vmobj: vim.VirtualMachine, hostobj: vim.HostSystem, dsobj: vim.Datastore,
+               pool: vim.ResourcePool) -> bool:
     spec = vim.VirtualMachineRelocateSpec()
     spec.host = hostobj
     spec.datastore = dsobj
+    spec.pool = pool
     tsk = vmobj.RelocateVM_Task(spec)
     sleep(.5)
     if tsk.info.error is not None:
