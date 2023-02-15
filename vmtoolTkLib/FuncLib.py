@@ -846,3 +846,12 @@ def get_performance_counters(vmobj:vim.VirtualMachine):
         return str(vmobj.config.vPMCEnabled)
     else:
         return False
+
+
+# get EVC mode
+def get_evc_mode(vmobj: vim.VirtualMachine):
+    if vmobj is not None:
+        if vmobj.summary.runtime.minRequiredEVCModeKey is not None:
+            return str(vmobj.summary.runtime.minRequiredEVCModeKey)
+        else:
+            return "None"

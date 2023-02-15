@@ -31,6 +31,7 @@ class VmStatusWindow:
         self.num_processors_var: StringVar = StringVar()
         self.total_ram_var: StringVar = StringVar()
         self.perf_counters: StringVar = StringVar()
+        self.evc_mode: StringVar = StringVar()
 
         # define widgets
         self.top_level = Toplevel(master=self.data.rootwin)
@@ -65,6 +66,8 @@ class VmStatusWindow:
         self.total_ram = Label(master=self.top_level, relief=SUNKEN, textvariable=self.total_ram_var, width=15)
         self.perf_counters_label = Label(master=self.top_level, text="Performance Counters")
         self.perf_counters_val = Label(master=self.top_level, relief=SUNKEN, textvariable=self.perf_counters, width=15)
+        self.evc_mode_label = Label(master=self.top_level, text="EVC Mode")
+        self.evc_mode_val = Label(master=self.top_level, relief=SUNKEN, textvariable=self.evc_mode, width=15)
 
         self.power_on_button = Button(master=self.top_level, text="Power On", command=lambda: self.power_on_handler(),
                                       width=20)
@@ -143,6 +146,8 @@ class VmStatusWindow:
         self.host_name.grid(column=2, row=11, padx=10, pady=10)
         self.perf_counters_label.grid(column=1, row=12, padx=10, pady=10)
         self.perf_counters_val.grid(column=2, row=12, padx=10, pady=10)
+        self.evc_mode_label.grid(column=1, row=13, padx=10, pady=10)
+        self.evc_mode_val.grid(column=2, row=13, padx=10, pady=10)
         self.power_on_button.grid(column=3, row=0, padx=10, pady=10)
         self.power_off_button.grid(column=3, row=1, padx=10, pady=10)
         self.promote_button.grid(column=3, row=2, padx=10, pady=10)
@@ -197,6 +202,7 @@ class VmStatusWindow:
         self.num_processors_var.set(get_num_processors(vmobj=self.vm_object))
         self.total_ram_var.set(get_total_mem(vmobj=self.vm_object))
         self.perf_counters.set(get_performance_counters(vmobj=self.vm_object))
+        self.evc_mode.set(get_evc_mode(vmobj=self.vm_object))
 
         return
 
