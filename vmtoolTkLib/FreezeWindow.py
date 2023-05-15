@@ -36,7 +36,10 @@ class FreezeWindow:
         self.script_dictionary = {
             "Windows Restart Script": windows_reboot_script,
             "Windows Fast Script": windows_fast_script,
-            "Linux/BSD Restart Script": linbsd_reboot_script
+            "Linux/BSD Restart Script": linbsd_reboot_script,
+            "pfSense Restart Script": "",
+            "OPNsense Restart Script": "",
+            "GNS3 Restart Script": ""
         }
 
         # define widgets
@@ -61,10 +64,48 @@ class FreezeWindow:
         # handlers
         def freeze_button_handler() -> None:
             script_type: str = self.freeze_combo.get()
-            script_file_obj: FreezeScript = self.script_dictionary.get(script_type)
             script_user: str = self.freeze_user.get()
             script_password: str = self.freeze_password.get()
+            if script_type == "pfSense Restart Script":
+                self.vm_object.PutUsbScanCodes(str_to_usb('8'))
+                self.vm_object.PutUsbScanCodes(str_to_usb('\n'))
+                sleep(3)
+                self.vm_object.PutUsbScanCodes(str_to_usb(r'vmware-rpctool "instantclone.freeze" && init 6'))
+                self.vm_object.PutUsbScanCodes(str_to_usb('\n'))
+                showinfo(title="Info", message="Freeze script started")
+                self.top.destroy()
+                return
+            elif script_type == "OPNsense Restart Script":
+                self.vm_object.PutUsbScanCodes(str_to_usb(script_user))
+                self.vm_object.PutUsbScanCodes(str_to_usb('\n'))
+                sleep(3)
+                self.vm_object.PutUsbScanCodes(str_to_usb(script_password))
+                self.vm_object.PutUsbScanCodes(str_to_usb('\n'))
+                sleep(3)
+                self.vm_object.PutUsbScanCodes(str_to_usb('8'))
+                self.vm_object.PutUsbScanCodes(str_to_usb('\n'))
+                sleep(3)
+                self.vm_object.PutUsbScanCodes(str_to_usb(r'vmware-rpctool "instantclone.freeze" && init 6'))
+                self.vm_object.PutUsbScanCodes(str_to_usb('\n'))
+                self.top.destroy()
+                showinfo(title="Info", message="Freeze script started")
+                return
+            elif script_type == "GNS3 Restart Script":
+                self.vm_object.PutUsbScanCodes(str_to_usb("\n"))
+                sleep(5)
+                self.vm_object.PutUsbScanCodes(str_to_usb("s"))
+                self.vm_object.PutUsbScanCodes(str_to_usb('\n'))
+                sleep(3)
+                self.vm_object.PutUsbScanCodes(str_to_usb('sudo -i'))
+                self.vm_object.PutUsbScanCodes(str_to_usb('\n'))
+                sleep(3)
+                self.vm_object.PutUsbScanCodes(str_to_usb(r'vmware-rpctool "instantclone.freeze" && init 6'))
+                self.vm_object.PutUsbScanCodes(str_to_usb('\n'))
+                self.top.destroy()
+                showinfo(title="Info", message="Freeze script started")
+                return
 
+            script_file_obj: FreezeScript = self.script_dictionary.get(script_type)
             ret = freeze_vm(script_type=script_type,
                             user=script_user,
                             password=script_password,
@@ -73,7 +114,7 @@ class FreezeWindow:
                             data=self.dataset,
                             vm=self.vm_object)
             # a return value greater than 0 means success
-            if ret > 0:
+            if ret > 0 or ret is None:
                 self.top.destroy()
                 showinfo(title="Info", message="Freeze script started")
                 return

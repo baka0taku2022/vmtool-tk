@@ -838,9 +838,14 @@ def freeze_vm(user: str,
         showerror(title="Error", message="Unknown system error in guest.")
         return 0
     except vim.fault.GuestPermissionDenied:
-        showerror(title='Error',
-                  message='The guest authentication used does not have permissions to perform the operation.')
-        return 0
+        try:
+            sleep(5)
+            process_manager.StartProgramInGuest(vm=vm, auth=creds, spec=program_spec)
+        except vim.fault.GuestPermissionDenied:
+            showerror(title='Error',
+                      message='The guest authentication used does not have permissions to perform the operation.')
+            return 0
+
 def get_performance_counters(vmobj:vim.VirtualMachine):
     if vmobj is not None:
         return str(vmobj.config.vPMCEnabled)

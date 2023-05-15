@@ -47,8 +47,12 @@ class StatWindow:
         self.statlab.update()
 
         # VM set
-        self.dataset.vmobjlist = self.dataset.content.viewManager.CreateContainerView(self.dataset.content.rootFolder,
+        while self.dataset.vmobjlist is None:
+            self.dataset.vmobjlist = self.dataset.content.viewManager.CreateContainerView(self.dataset.content.rootFolder,
                                                                                       [vim.VirtualMachine], True)
+            if self.dataset.vmobjlist.view is None:
+                self.dataset.content = self.dataset.connection.RetrieveContent()
+
         # Hosts set
         self.dataset.hostobjlist = self.dataset.content.viewManager.CreateContainerView(self.dataset.content.rootFolder,
                                                                                         [vim.HostSystem], True)
