@@ -7,6 +7,8 @@ written once.
 import random
 import ssl
 import re
+import subprocess
+
 import requests
 from socket import gaierror
 from time import sleep
@@ -860,3 +862,11 @@ def get_evc_mode(vmobj: vim.VirtualMachine):
             return str(vmobj.summary.runtime.minRequiredEVCModeKey)
         else:
             return "None"
+
+def get_vmrc_url(vmobj: vim.VirtualMachine, data: DataTree):
+    sm = data.content.sessionManager
+    ticket = sm.AcquireCloneTicket()
+    moref = vmobj._moId
+    vc_name = data.vc_name
+    vmrc_url = "vmrc://clone:" + ticket + "@" + vc_name + ":443/?moid=" + moref
+    subprocess.run(["C:\\Program Files (x86)\\VMware\\VMware Remote Console\\vmrc.exe", vmrc_url])

@@ -106,6 +106,8 @@ class VmStatusWindow:
                                      command=lambda: self.migrate_handler())
         self.delete_button = Button(master=self.top_level, text="Delete", width=20,
                                     command=lambda: self.delete_handler())
+        self.console_button = Button(master=self.top_level, text="VMRC Console", command=lambda: self.console_handler(),
+                                     width=20)
 
         # define scrollbar properties
         self.vm_list.config(yscrollcommand=self.vm_scroll.set)
@@ -165,6 +167,7 @@ class VmStatusWindow:
         self.clone_button.grid(column=4, row=2, padx=10, pady=10)
         self.migrate_button.grid(column=4, row=3, padx=10, pady=10)
         self.delete_button.grid(column=4, row=4, padx=10, pady=10)
+        self.console_button.grid(column=4, row=5, padx=10, pady=10)
 
     # event handler
     def list_handle(self, event) -> None:
@@ -363,3 +366,7 @@ class VmStatusWindow:
         delete_vm(vmobj=self.vm_object)
         showinfo(title="Info", message="VM Deleted")
         return
+
+    def console_handler(self):
+        get_vmrc_url(vmobj=self.vm_object, data=self.data)
+        pass

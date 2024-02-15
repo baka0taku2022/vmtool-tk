@@ -41,6 +41,7 @@ class DataTree:
             self.resourcepoollist: vim.view.ContainerView
             self.resourcepoollist = None
             self.resourcepooldict = dict()
+            self.vc_name = str()
 
 
         else:

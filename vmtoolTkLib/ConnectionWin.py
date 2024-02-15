@@ -51,6 +51,7 @@ class ConnectionWin:
             showerror(title='Error', message='Please fill in all fields!')
             return
 
+        self.dataset.vc_name = fqdn
         self.stat.set("Connecting...")
         self.connwin.update()
         if make_connection(dataset=self.dataset, fqdn=self.serverentry.get(), user=self.userentry.get(),
