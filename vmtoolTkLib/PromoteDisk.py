@@ -24,7 +24,7 @@ class PromoteDisk:
             self.vmbox = Listbox(master=self.vmframe, bg='black', fg='white', width=50, height=15, selectmode=MULTIPLE)
         elif window_type == "dvclone":
             self.vmbox = Listbox(master=self.vmframe, bg='black', fg='white', width=50, height=15)
-        self.vmscroll = Scrollbar(master=self.vmframe, orient=VERTICAL)
+        self.vmscroll = Scrollbar(master=self.vmframe, orient="vertical")
         self.vmbox.config(yscrollcommand=self.vmscroll.set)
         self.vmscroll.config(command=self.vmbox.yview)
         if window_type == "promote":
@@ -47,9 +47,9 @@ class PromoteDisk:
         # place widgets
         self.vmlabel.grid(row=0, column=0, padx=20, pady=5)
         self.vmframe.grid(row=1, column=0, padx=20, pady=20, rowspan=2)
-        self.search_box.pack(side=TOP)
-        self.vmbox.pack(side=LEFT, fill=BOTH)
-        self.vmscroll.pack(side=RIGHT, fill=BOTH)
+        self.search_box.pack(side="top")
+        self.vmbox.pack(side="left", fill="both")
+        self.vmscroll.pack(side="right", fill="both")
         self.refresh.grid(row=4, column=0, padx=20, pady=20)
         self.executebutton.grid(row=5, column=0, padx=20, pady=20, sticky=W + E)
 

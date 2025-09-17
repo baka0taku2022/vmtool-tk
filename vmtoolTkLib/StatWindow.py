@@ -26,12 +26,12 @@ class StatWindow:
         self.statWin: Toplevel = Toplevel(master=self.dataset.rootwin)
         self.container: Frame = Frame(master=self.statWin, padx=20, pady=20)
         self.statlab: Label = Label(master=self.container, textvariable=self.tvar)
-        self.progress_bar = Progressbar(master=self.container, length=100, orient=HORIZONTAL, maximum=1,
+        self.progress_bar = Progressbar(master=self.container, length=100, orient="horizontal", maximum=1,
                                         variable=self.progress_var,)
         # place widgets
         self.statlab.grid(row=0, column=0, pady=10, padx=10, sticky=E + W)
         self.progress_bar.grid(column=0, row=1, padx=10, pady=10)
-        self.container.pack(expand=True, fill=BOTH, padx=30, pady=30)
+        self.container.pack(expand=True, fill="both", padx=30, pady=30)
 
         self.statWin.update()
         self.parse_data()

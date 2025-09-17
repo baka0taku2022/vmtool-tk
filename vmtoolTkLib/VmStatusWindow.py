@@ -9,13 +9,14 @@ from .SnapshotWindow import SnapshotWindow
 from .VmTaskWindow import VmTaskWindow
 from .CloneRegWin import CloneRegWin
 from .MigrateWindow import MigrateWindow
+from .StartScriptWindow import ScriptExecuteWindow
+from .DlFromVmWindow import DlFromVmWindow
 
 
 class VmStatusWindow:
     def __init__(self, dataset: DataTree):
-        self.vm_object = None
+        self.vm_object: None | vim.VirtualMachine = None
         self.data: DataTree = dataset
-        self.vm_object: vim.VirtualMachine
 
         # define status variables
         self.cpuvar: StringVar = StringVar()
@@ -37,38 +38,40 @@ class VmStatusWindow:
         self.top_level = Toplevel(master=self.data.rootwin)
         self.vm_frame = Frame(master=self.top_level)
         self.vm_list = Listbox(master=self.vm_frame, width=50, height=15)
+
         # event binding
         self.vm_list.bind('<<ListboxSelect>>', self.list_handle)
-        self.vm_scroll = Scrollbar(master=self.vm_frame, orient=VERTICAL)
-        self.cpu_label = Label(master=self.top_level, text="CPU Usage")
-        self.cpu_usage = Label(master=self.top_level, relief=SUNKEN, textvariable=self.cpuvar, width=15)
-        self.mem_label = Label(master=self.top_level, text="Memory Usage")
-        self.mem_usage = Label(master=self.top_level, relief=SUNKEN, textvariable=self.ramvar, width=15)
-        self.disk_usage_label = Label(master=self.top_level, text="Disk Usage")
-        self.disk_usage = Label(master=self.top_level, relief=SUNKEN, textvariable=self.diskusevar, width=15)
-        self.power_label = Label(master=self.top_level, text="Powered on?")
-        self.power = Label(master=self.top_level, relief=SUNKEN, textvariable=self.powervar, width=15)
-        self.frozen_label = Label(master=self.top_level, text="Frozen?")
-        self.frozen = Label(master=self.top_level, relief=SUNKEN, textvariable=self.frozenvar, width=15)
-        self.num_disks_label = Label(master=self.top_level, text="Number of Disks")
-        self.num_disks = Label(master=self.top_level, relief=SUNKEN, textvariable=self.disknumvar, width=15)
-        self.num_snapshots_label = Label(master=self.top_level, text="Number of Snapshots")
-        self.num_snapshots = Label(master=self.top_level, relief=SUNKEN, textvariable=self.snapvar, width=15)
-        self.num_disk_files_label = Label(master=self.top_level, text="Number of Disk Files/Disk")
-        self.num_disk_files = Label(master=self.top_level, relief=SUNKEN, textvariable=self.diskfilevar, width=15)
-        self.swapped_memory_label = Label(master=self.top_level, text="Swapped Memory")
-        self.swapped_memory = Label(master=self.top_level, relief=SUNKEN, textvariable=self.swapped_memory_var, width=15)
-        self.host_name_label = Label(master=self.top_level, text="Host Name")
-        self.host_name = Label(master=self.top_level, relief=SUNKEN, textvariable=self.host_name_var, width=15)
-        self.num_processors_label = Label(master=self.top_level, text="Number of CPU")
-        self.num_processors = Label(master=self.top_level, relief=SUNKEN, textvariable=self.num_processors_var, width=15)
-        self.total_ram_label = Label(master=self.top_level, text="Total RAM")
-        self.total_ram = Label(master=self.top_level, relief=SUNKEN, textvariable=self.total_ram_var, width=15)
-        self.perf_counters_label = Label(master=self.top_level, text="Performance Counters")
-        self.perf_counters_val = Label(master=self.top_level, relief=SUNKEN, textvariable=self.perf_counters, width=15)
-        self.evc_mode_label = Label(master=self.top_level, text="EVC Mode")
-        self.evc_mode_val = Label(master=self.top_level, relief=SUNKEN, textvariable=self.evc_mode, width=15)
 
+        # more widget definitions
+        self.vm_scroll = Scrollbar(master=self.vm_frame, orient="vertical")
+        self.cpu_label = Label(master=self.top_level, text="CPU Usage")
+        self.cpu_usage = Label(master=self.top_level, relief="sunken", textvariable=self.cpuvar, width=15)
+        self.mem_label = Label(master=self.top_level, text="Memory Usage")
+        self.mem_usage = Label(master=self.top_level, relief="sunken", textvariable=self.ramvar, width=15)
+        self.disk_usage_label = Label(master=self.top_level, text="Disk Usage")
+        self.disk_usage = Label(master=self.top_level, relief="sunken", textvariable=self.diskusevar, width=15)
+        self.power_label = Label(master=self.top_level, text="Powered on?")
+        self.power = Label(master=self.top_level, relief="sunken", textvariable=self.powervar, width=15)
+        self.frozen_label = Label(master=self.top_level, text="Frozen?")
+        self.frozen = Label(master=self.top_level, relief="sunken", textvariable=self.frozenvar, width=15)
+        self.num_disks_label = Label(master=self.top_level, text="Number of Disks")
+        self.num_disks = Label(master=self.top_level, relief="sunken", textvariable=self.disknumvar, width=15)
+        self.num_snapshots_label = Label(master=self.top_level, text="Number of Snapshots")
+        self.num_snapshots = Label(master=self.top_level, relief="sunken", textvariable=self.snapvar, width=15)
+        self.num_disk_files_label = Label(master=self.top_level, text="Number of Disk Files/Disk")
+        self.num_disk_files = Label(master=self.top_level, relief="sunken", textvariable=self.diskfilevar, width=15)
+        self.swapped_memory_label = Label(master=self.top_level, text="Swapped Memory")
+        self.swapped_memory = Label(master=self.top_level, relief="sunken", textvariable=self.swapped_memory_var, width=15)
+        self.host_name_label = Label(master=self.top_level, text="Host Name")
+        self.host_name = Label(master=self.top_level, relief="sunken", textvariable=self.host_name_var, width=15)
+        self.num_processors_label = Label(master=self.top_level, text="Number of CPU")
+        self.num_processors = Label(master=self.top_level, relief="sunken", textvariable=self.num_processors_var, width=15)
+        self.total_ram_label = Label(master=self.top_level, text="Total RAM")
+        self.total_ram = Label(master=self.top_level, relief="sunken", textvariable=self.total_ram_var, width=15)
+        self.perf_counters_label = Label(master=self.top_level, text="Performance Counters")
+        self.perf_counters_val = Label(master=self.top_level, relief="sunken", textvariable=self.perf_counters, width=15)
+        self.evc_mode_label = Label(master=self.top_level, text="EVC Mode")
+        self.evc_mode_val = Label(master=self.top_level, relief="sunken", textvariable=self.evc_mode, width=15)
         self.power_on_button = Button(master=self.top_level, text="Power On", command=lambda: self.power_on_handler(),
                                       width=20)
         self.power_off_button = Button(master=self.top_level, text="Power Off",
@@ -106,8 +109,12 @@ class VmStatusWindow:
                                      command=lambda: self.migrate_handler())
         self.delete_button = Button(master=self.top_level, text="Delete", width=20,
                                     command=lambda: self.delete_handler())
-        self.console_button = Button(master=self.top_level, text="VMRC Console", command=lambda: self.console_handler(),
-                                     width=20)
+
+        self.execute_script_button = Button(master=self.top_level, text="Execute Guest Script",
+                                            command=lambda: self.guest_script_handler(), width=20)
+
+        self.download_from_vm_button = Button(master=self.top_level, text="Download From VM",
+                                              command=lambda: self.dl_from_vm_handler(), width=20)
 
         # define scrollbar properties
         self.vm_list.config(yscrollcommand=self.vm_scroll.set)
@@ -118,9 +125,9 @@ class VmStatusWindow:
 
         # place widgets
         self.vm_frame.grid(column=0, row=0, padx=20, pady=20, rowspan=10)
-        self.search_box.pack(side=TOP)
-        self.vm_list.pack(side=LEFT)
-        self.vm_scroll.pack(side=RIGHT, fill=BOTH)
+        self.search_box.pack(side="top")
+        self.vm_list.pack(side="left")
+        self.vm_scroll.pack(side="right", fill="both")
         self.refresh_button.grid(column=0, row=11, padx=10, pady=10)
         self.cpu_label.grid(column=1, row=0, padx=10, pady=10)
         self.cpu_usage.grid(column=2, row=0, padx=10, pady=10)
@@ -167,7 +174,8 @@ class VmStatusWindow:
         self.clone_button.grid(column=4, row=2, padx=10, pady=10)
         self.migrate_button.grid(column=4, row=3, padx=10, pady=10)
         self.delete_button.grid(column=4, row=4, padx=10, pady=10)
-        self.console_button.grid(column=4, row=5, padx=10, pady=10)
+        self.execute_script_button.grid(column=4, row=5, padx=10, pady=10)
+        self.download_from_vm_button.grid(column=4, row=6, padx=10, pady=10)
 
     # event handler
     def list_handle(self, event) -> None:
@@ -369,4 +377,16 @@ class VmStatusWindow:
 
     def console_handler(self):
         get_vmrc_url(vmobj=self.vm_object, data=self.data)
-        pass
+        return
+
+    def guest_script_handler(self):
+        if self.vm_object is None:
+            return
+        ScriptExecuteWindow(data=self.data, vm=self.vm_object)
+        return
+
+    def dl_from_vm_handler(self):
+        if self.vm_object is None:
+            return
+        DlFromVmWindow(vm=self.vm_object, data=self.data)
+        return

@@ -5,17 +5,19 @@ written once.
 -=baka0taku=-
 """
 import random
-import ssl
 import re
-import subprocess
-
-import requests
+import ssl
+from pathlib import PurePath
 from socket import gaierror
 from time import sleep
 from tkinter import *
+from tkinter.filedialog import asksaveasfilename
 from tkinter.messagebox import *
+
+import requests
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim, vmodl
+
 from .DataTree import DataTree
 from .StatWindow import StatWindow
 
@@ -777,7 +779,7 @@ def freeze_vm(user: str,
               file_name: str,
               file_content: str,
               data: DataTree,
-              vm: vim.VirtualMachine) -> int:
+              vm: vim.VirtualMachine) -> int | None:
     # create credential object for authentication
     creds: vim.vm.guest.NamePasswordAuthentication = vim.vm.guest.NamePasswordAuthentication(
         username=user, password=password)
@@ -863,10 +865,36 @@ def get_evc_mode(vmobj: vim.VirtualMachine):
         else:
             return "None"
 
-def get_vmrc_url(vmobj: vim.VirtualMachine, data: DataTree):
-    sm = data.content.sessionManager
-    ticket = sm.AcquireCloneTicket()
-    moref = vmobj._moId
-    vc_name = data.vc_name
-    vmrc_url = "vmrc://clone:" + ticket + "@" + vc_name + ":443/?moid=" + moref
-    subprocess.run(["C:\\Program Files (x86)\\VMware\\VMware Remote Console\\vmrc.exe", vmrc_url])
+# Execute script on VM
+def execute_script(vm_object: vim.VirtualMachine, username:str, password:str, script_name:str, data: DataTree):
+
+    # create credential object for authentication
+    creds: vim.vm.guest.NamePasswordAuthentication = vim.vm.guest.NamePasswordAuthentication(
+        username=username, password=password)
+
+    # get process manager singleton
+    process_manager = data.content.guestOperationsManager.processManager
+
+    # define script path
+    remote_path = script_name
+
+    # define spec for program
+    program_spec = vim.vm.guest.ProcessManager.ProgramSpec(programPath=remote_path)
+
+    # execute script
+    ret = process_manager.StartProgramInGuest(vm=vm_object, auth=creds, spec=program_spec)
+    return ret
+
+def download_file_from_vm(vmobj:vim.VirtualMachine, data:DataTree, vm_file:str,username:str, password:str,
+                          parent_obj:Tk | Toplevel) -> None:
+    vm_file_path = PurePath(vm_file)
+    initial_filename = vm_file_path.name
+    creds: vim.vm.guest.NamePasswordAuthentication = vim.vm.guest.NamePasswordAuthentication(username=username, password=password)
+    file_manager: vim.vm.guest.FileManager = data.content.guestOperationsManager.fileManager
+    transfer_info: vim.vm.guest.FileManager.FileTransferInformation = file_manager.InitiateFileTransferFromGuest(vm=vmobj, auth=creds, guestFilePath=vm_file)
+    resp: requests.models.Response = requests.get(url=transfer_info.url, verify=False)
+    if resp.ok:
+        local_file_name = asksaveasfilename(confirmoverwrite=True, parent=parent_obj, initialfile=initial_filename)
+        with open(file=local_file_name, mode="+wb") as file_handle:
+            file_handle.write(resp.content)
+    return

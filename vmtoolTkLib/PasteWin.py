@@ -12,7 +12,7 @@ class PasteWin:
         self.search_box.bind(sequence='<KeyRelease>', func=self.search)
         self.vm_list: Listbox = Listbox(master=self.vm_frame, width=50, height=10)
         self.vm_list.insert(END, *sorted(list(self.dataset.vmdict.keys()), key=str.lower))
-        self.vm_scroll = Scrollbar(master=self.vm_frame, orient=VERTICAL)
+        self.vm_scroll = Scrollbar(master=self.vm_frame, orient="vertical")
         self.vm_list.config(yscrollcommand=self.vm_scroll.set)
         self.pasted_text: Text = Text(master=self.top_window, width=80, height=24)
         self.paste_button: Button = Button(master=self.top_window, text='Paste to VM',
